@@ -95,8 +95,8 @@ Broker2, Broker3**. `orders` adında bir topic oluşturup ona **3 partition**
 verdiğimizi düşünelim: **P0, P1, P2**.
 
 Burada dikkat: topic **mantıksal** bir kavramdır. Asıl odaklanılması gereken yer
-**partition'lar ve broker'lardır**. Yükün dengeli dağıtıldığı bir senaryoda her
-broker'da 2 partition bulunur:
+**partition'lar ve broker'lardır**. Yükün dengeli dağıtıldığı bu senaryoda — yani
+bizim örneğimizde — her broker'da 2 partition bulunur:
 
 ```
 Broker 1   →   P0 (leader)    P2 (replica)
