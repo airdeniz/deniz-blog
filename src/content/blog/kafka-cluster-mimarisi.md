@@ -163,7 +163,9 @@ order_id = 5   →  hash(5)  = 7634  →  7634 % 3 = 1  →  P1 (yine!)
 
 Aynı girdi her zaman aynı çıktıyı üretir. Bu yüzden `order_id = 5` her seferinde
 P1'e düşer. Böylece aynı siparişe ait tüm event'ler hep aynı partition'da
-**sıralı** kalır.
+**sıralı** kalır. Bu sıra kritiktir; çünkü aynı siparişin "oluşturuldu → statü
+değişti → silindi" event'leri yanlış sırayla işlenirse, consumer tarafında
+tutarsız bir sonuç ortaya çıkar.
 
 ### Partition sayısını en baştan doğru seçin
 
