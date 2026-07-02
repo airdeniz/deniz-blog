@@ -173,8 +173,9 @@ Fakat bu partition sayısı, sistem kurulurken çok iyi tespit edilmelidir. İht
 ise, gelecekte daha fazla kapasite gerekebileceğinden en az **12 veya 24**
 partition seçilmelidir.
 
-Sebep: partition sayısını artırmak (ki partition sayısı **azaltılamaz**), hash
-mekanizmasının farklı sonuçlar üretmesine sebep olur. Çünkü partition sayısının
+Sebep: partition sayısını artırmak (ki mevcut bir topic'te partition sayısı
+yalnızca **artırılabilir**; azaltmak için topic'i silip yeniden oluşturmak
+gerekir), hash mekanizmasının farklı sonuçlar üretmesine sebep olur. Çünkü partition sayısının
 hesaplamadaki rolü kritiktir. Eğer hesaplama değişirse, bu sefer `order_id = 5`
 siparişi P1'e gitmez ve belki de P2'ye düşer.
 
