@@ -133,6 +133,10 @@ Ayrım noktası **transformation ihtiyacı**:
   çok daha hafif.
 - Yolda aggregation, stream-stream join ya da pencereleme (windowing) gibi ağır bir
   dönüşüm gerekiyorsa → burada **Flink** veya **Spark Structured Streaming** devreye girer.
+  İkisi arasındaki temel fark ise şu: Flink her olayı tek tek işleyen (event-at-a-time)
+  native bir stream motoru olduğu için milisaniye seviyesinde düşük gecikme sunarken,
+  Spark Structured Streaming olayları küçük gruplar halinde işlediği (micro-batch) için
+  gecikmesi biraz daha yüksektir ama batch ekosistemiyle entegrasyonu daha kolaydır.
 
 Yani kendinize sormanız gereken tek soru şu: *"Veriyi hedefe yazmadan önce yolda
 ağır bir dönüşüme sokmam gerekiyor mu?"* Cevap **hayır**sa Kafka Connect, **evet**se
