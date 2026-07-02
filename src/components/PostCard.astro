@@ -1,0 +1,61 @@
+---
+import { formatDate, joinBase } from '../utils';
+
+interface Props {
+  id: string;
+  title: string;
+  description: string;
+  pubDate: Date;
+  tags?: string[];
+}
+
+const { id, title, description, pubDate, tags = [] } = Astro.props;
+const url = joinBase(`blog/${id}/`);
+---
+<article class="post-card">
+  <a href={url} class="card-link">
+    <div class="card-meta">
+      <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+    </div>
+    <h2 class="card-title">{title}</h2>
+    <p class="card-desc">{description}</p>
+    {tags.length > 0 && (
+      <div class="card-tags">
+        {tags.map((t) => <span class="tag">{t}</span>)}
+      </div>
+    )}
+    <span class="card-more">Devamını oku →</span>
+  </a>
+</article>
+
+<style>
+  .post-card {
+    border-bottom: 1px solid var(--border);
+    padding: 1.8rem 0;
+  }
+  .post-card:first-child { padding-top: 0; }
+  .card-link { display: block; color: inherit; }
+  .card-link:hover { text-decoration: none; }
+  .card-link:hover .card-title { color: var(--accent); }
+  .card-meta {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+  }
+  .card-title {
+    font-size: 1.45rem;
+    margin: 0 0 0.35rem;
+    transition: color 0.15s ease;
+  }
+  .card-desc {
+    color: var(--text-soft);
+    margin: 0 0 0.7rem;
+    font-size: 1rem;
+  }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.7rem; }
+  .card-more {
+    font-size: 0.9rem;
+    color: var(--accent);
+    font-weight: 500;
+  }
+</style>

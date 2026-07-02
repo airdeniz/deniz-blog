@@ -1,0 +1,90 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import { SITE } from '../config';
+import { joinBase } from '../utils';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
+);
+const latest = posts.slice(0, 5);
+---
+<BaseLayout>
+  <section class="container hero">
+    <h1>Merhaba, ben {SITE.author} 👋</h1>
+    <p class="hero-text">{SITE.description}</p>
+    <div class="hero-actions">
+      <a href={joinBase('blog/')} class="btn btn-primary">Yazıları oku</a>
+      <a href={joinBase('hakkimda/')} class="btn">Hakkımda</a>
+    </div>
+  </section>
+
+  <section class="container posts">
+    <div class="section-head">
+      <h2>Son yazılar</h2>
+      {posts.length > 5 && <a href={joinBase('blog/')} class="see-all">Tümü →</a>}
+    </div>
+    {latest.length === 0 ? (
+      <p class="muted">Henüz yazı yok. Yakında burada olacak.</p>
+    ) : (
+      latest.map((post) => (
+        <PostCard
+          id={post.id}
+          title={post.data.title}
+          description={post.data.description}
+          pubDate={post.data.pubDate}
+          tags={post.data.tags}
+        />
+      ))
+    )}
+  </section>
+</BaseLayout>
+
+<style>
+  .hero { padding: 4rem 24px 3rem; }
+  .hero h1 { font-size: 2.6rem; margin-bottom: 0.5rem; }
+  .hero-text {
+    font-size: 1.25rem;
+    color: var(--text-soft);
+    max-width: 40ch;
+    line-height: 1.55;
+  }
+  .hero-actions { display: flex; gap: 0.8rem; margin-top: 1.6rem; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { color: #fff; opacity: 0.9; }
+
+  .posts { padding-bottom: 2rem; }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.6rem;
+  }
+  .section-head h2 { margin: 0; font-size: 1.3rem; }
+  .see-all { font-size: 0.9rem; }
+
+  @media (max-width: 640px) {
+    .hero { padding: 2.5rem 24px 2rem; }
+    .hero h1 { font-size: 2.1rem; }
+  }
+</style>

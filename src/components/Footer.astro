@@ -1,0 +1,40 @@
+---
+import { SITE } from '../config';
+const year = new Date().getFullYear();
+const hasUser = (url: string) => !url.includes('KULLANICIADI');
+---
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span class="muted">© {year} {SITE.author}</span>
+    <div class="socials">
+      {SITE.email && (
+        <a href={`mailto:${SITE.email}`} aria-label="E-posta">E-posta</a>
+      )}
+      {SITE.github && hasUser(SITE.github) && (
+        <a href={SITE.github} target="_blank" rel="noopener">GitHub</a>
+      )}
+      {SITE.linkedin && hasUser(SITE.linkedin) && (
+        <a href={SITE.linkedin} target="_blank" rel="noopener">LinkedIn</a>
+      )}
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--border);
+    margin-top: 4rem;
+    padding: 2rem 0;
+    font-size: 0.92rem;
+  }
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .socials { display: flex; gap: 1.2rem; }
+  .socials a { color: var(--text-soft); }
+  .socials a:hover { color: var(--accent); }
+</style>

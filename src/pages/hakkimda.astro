@@ -1,0 +1,58 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../config';
+
+const hasUser = (url: string) => !url.includes('KULLANICIADI');
+---
+<BaseLayout title="Hakkımda" description={`${SITE.author} hakkında`}>
+  <section class="container about">
+    <h1>Hakkımda</h1>
+
+    <p>
+      Merhaba, ben <strong>{SITE.author}</strong>. Bu blogda yazılım, veri ve
+      dağıtık sistemler üzerine öğrendiklerimi ve notlarımı paylaşıyorum.
+      Amacım hem kendi öğrenme sürecimi belgelemek hem de aynı konulara ilgi
+      duyanlara faydalı olmak.
+    </p>
+
+    <p>
+      Şu sıralar özellikle <strong>Apache Kafka</strong> ve olay tabanlı (event-driven)
+      mimariler üzerine çalışıyorum. Yeni içerikler için ara ara uğramaktan çekinme.
+    </p>
+
+    <h2>İletişim</h2>
+    <ul class="contact">
+      {SITE.email && (
+        <li><span class="k">E-posta</span><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
+      )}
+      {SITE.github && hasUser(SITE.github) && (
+        <li><span class="k">GitHub</span><a href={SITE.github} target="_blank" rel="noopener">{SITE.github.replace('https://', '')}</a></li>
+      )}
+      {SITE.linkedin && hasUser(SITE.linkedin) && (
+        <li><span class="k">LinkedIn</span><a href={SITE.linkedin} target="_blank" rel="noopener">{SITE.linkedin.replace('https://www.', '').replace('https://', '')}</a></li>
+      )}
+    </ul>
+
+    <p class="note muted">
+      Not: Bu sayfayı ve <code>src/config.ts</code> dosyasını kendi bilgilerinle
+      güncellemeyi unutma (isim, GitHub, LinkedIn vb.).
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  .about { padding-top: 3rem; max-width: 640px; }
+  .contact { list-style: none; margin: 1rem 0 2rem; padding: 0; }
+  .contact li {
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .contact .k {
+    min-width: 90px;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+  .note { margin-top: 2rem; font-size: 0.9rem; }
+</style>

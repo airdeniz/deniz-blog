@@ -1,0 +1,76 @@
+---
+import { SITE, NAV } from '../config';
+import ThemeToggle from './ThemeToggle.astro';
+
+const base = import.meta.env.BASE_URL;
+const withBase = (href: string) =>
+  (base + href).replace(/\/{2,}/g, '/');
+
+// Aktif menü öğesini işaretle
+const current = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => {
+  const target = withBase(href).replace(/\/$/, '') || '/';
+  if (target === (base.replace(/\/$/, '') || '/')) return current === target;
+  return current === target || current.startsWith(target + '/');
+};
+---
+<header class="site-header">
+  <div class="container header-inner">
+    <a href={withBase('/')} class="brand">{SITE.author}</a>
+    <nav class="nav" aria-label="Ana menü">
+      {NAV.map((item) => (
+        <a
+          href={withBase(item.href)}
+          class:list={['nav-link', { active: isActive(item.href) }]}
+        >
+          {item.label}
+        </a>
+      ))}
+      <ThemeToggle />
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: saturate(180%) blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+  .brand {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .brand:hover { text-decoration: none; color: var(--accent); }
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .nav-link {
+    color: var(--text-soft);
+    font-size: 0.95rem;
+    padding: 0.4rem 0.7rem;
+    border-radius: 7px;
+    transition: all 0.15s ease;
+  }
+  .nav-link:hover { color: var(--text); background: var(--bg-soft); text-decoration: none; }
+  .nav-link.active { color: var(--accent); }
+
+  @media (max-width: 640px) {
+    .nav { gap: 0.1rem; }
+    .nav-link { padding: 0.4rem 0.5rem; font-size: 0.9rem; }
+  }
+</style>
