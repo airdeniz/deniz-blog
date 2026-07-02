@@ -7,7 +7,6 @@ const searchUrl = (base + '/search.json').replace(/\/{2,}/g, '/');
 </button>
 
 <div id="search-modal" class="search-modal" hidden>
-  <div class="search-backdrop" id="search-backdrop"></div>
   <div class="search-panel" role="dialog" aria-modal="true" aria-label="Site içi arama">
     <div class="search-input-row">
       <svg class="search-input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
@@ -40,17 +39,22 @@ const searchUrl = (base + '/search.json').replace(/\/{2,}/g, '/');
   }
   .search-btn:hover { color: var(--accent); border-color: var(--accent); }
 
-  .search-modal { position: fixed; inset: 0; z-index: 100; }
-  .search-backdrop {
-    position: absolute;
+  .search-modal {
+    position: fixed;
     inset: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 12vh 16px 16px;
     background: rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(2px);
   }
+  .search-modal[hidden] { display: none; }
   .search-panel {
     position: relative;
+    width: 100%;
     max-width: 580px;
-    margin: 12vh auto 0;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 14px;
@@ -167,7 +171,7 @@ const searchUrl = (base + '/search.json').replace(/\/{2,}/g, '/');
   }
 
   @media (max-width: 640px) {
-    .search-panel { margin: 8vh 12px 0; }
+    .search-modal { padding: 8vh 12px 12px; }
     .search-footer { display: none; }
   }
 </style>
@@ -176,7 +180,6 @@ const searchUrl = (base + '/search.json').replace(/\/{2,}/g, '/');
   (function () {
     const openBtn = document.getElementById('search-open');
     const modal = document.getElementById('search-modal');
-    const backdrop = document.getElementById('search-backdrop');
     const input = document.getElementById('search-input');
     const resultsEl = document.getElementById('search-results');
     const emptyEl = document.getElementById('search-empty');
@@ -288,9 +291,9 @@ const searchUrl = (base + '/search.json').replace(/\/{2,}/g, '/');
     }
 
     openBtn && openBtn.addEventListener('click', openModal);
-    // Panel dışındaki boş bir yere tıklayınca (Esc gibi) kapat
+    // Panel dışındaki karartılmış boşluğa tıklayınca (Esc gibi) kapat
     modal && modal.addEventListener('mousedown', (e) => {
-      if (!e.target.closest('.search-panel')) closeModal();
+      if (e.target === modal) closeModal();
     });
     input && input.addEventListener('input', (e) => render(e.target.value));
     input && input.addEventListener('keydown', (e) => {
