@@ -181,6 +181,12 @@ const searchUrl = (base + '/search.json').replace(/\/{2,}/g, '/');
     const openBtn = document.getElementById('search-open');
     const modal = document.getElementById('search-modal');
     const input = document.getElementById('search-input');
+
+    // Header'ın backdrop-filter'ı, position:fixed olan modalı header kutusuna
+    // hapsediyor. Modalı doğrudan body'e taşıyarak tüm ekranı kaplamasını sağla.
+    if (modal && modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
+    }
     const resultsEl = document.getElementById('search-results');
     const emptyEl = document.getElementById('search-empty');
     const hintEl = document.getElementById('search-hint');
