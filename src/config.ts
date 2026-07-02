@@ -7,7 +7,7 @@ export const SITE = {
     'Yazılım, veri ve dağıtık sistemler üzerine notlar. Apache Kafka, mimari ve öğrendiklerim.',
   // İletişim & sosyal bağlantılar. Boş bırakırsan header/footer'da görünmez.
   email: 'denizsk977@gmail.com',
-  github: 'https://github.com/KULLANICIADI',
+  github: 'https://github.com/airdeniz',
   linkedin: 'https://www.linkedin.com/in/KULLANICIADI',
 };
 
