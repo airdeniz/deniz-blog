@@ -8,7 +8,7 @@ export const SITE = {
   // İletişim & sosyal bağlantılar. Boş bırakırsan header/footer'da görünmez.
   email: 'denizsk977@gmail.com',
   github: 'https://github.com/airdeniz',
-  linkedin: 'https://www.linkedin.com/in/KULLANICIADI',
+  linkedin: 'https://www.linkedin.com/in/deniz-isik-ofc/',
 };
 
 // Header'daki gezinme menüsü
