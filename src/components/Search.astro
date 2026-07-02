@@ -198,13 +198,11 @@ const searchUrl = (base + '/search.json').replace(/\/{2,}/g, '/');
 
     function openModal() {
       modal.hidden = false;
-      document.body.style.overflow = 'hidden';
       loadIndex();
       setTimeout(() => input.focus(), 20);
     }
     function closeModal() {
       modal.hidden = true;
-      document.body.style.overflow = '';
       input.value = '';
       resultsEl.innerHTML = '';
       emptyEl.hidden = true;
