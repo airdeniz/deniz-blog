@@ -288,7 +288,10 @@ const searchUrl = (base + '/search.json').replace(/\/{2,}/g, '/');
     }
 
     openBtn && openBtn.addEventListener('click', openModal);
-    backdrop && backdrop.addEventListener('click', closeModal);
+    // Panel dışındaki boş bir yere tıklayınca (Esc gibi) kapat
+    modal && modal.addEventListener('mousedown', (e) => {
+      if (!e.target.closest('.search-panel')) closeModal();
+    });
     input && input.addEventListener('input', (e) => render(e.target.value));
     input && input.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowDown') { e.preventDefault(); setActive(activeIndex + 1); }
