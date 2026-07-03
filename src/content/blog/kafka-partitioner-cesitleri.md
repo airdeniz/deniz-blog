@@ -156,9 +156,10 @@ Neden bu kadar dengesiz?
   ayırdı.
 - **Custom nadir**, çünkü ancak varsayılan algoritmanın yetmediği özel durumlarda
   yazılır — ve yazması da bakımı da maliyetlidir.
-- **Round-Robin neredeyse hiç kullanılmaz**: hem sırayı bozar hem de her mesaj için ayrı
-  network paketi açarak performansı düşürür. Anahtarsız veri için zaten daha iyisi
-  (Sticky) var.
+- **Round-Robin neredeyse hiç kullanılmaz**: hem key'i yok saydığı için sırayı bozar,
+  hem de mesajları partition'lara tek tek dağıttığından batch'ler dolmadan, küçük küçük
+  gönderilir — bu da istek sayısını artırıp gecikmeyi yükseltir. Anahtarsız veri için
+  zaten daha iyisi (Sticky) var.
 
 ## Özet: karar matrisi
 
