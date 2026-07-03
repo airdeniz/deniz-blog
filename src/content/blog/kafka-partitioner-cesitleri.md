@@ -31,13 +31,8 @@ partition sayısına göre modunu alır (ikinci yazıdaki `hash(key) % partition
 Key yoksa (`null`), başka bir strateji devreye girer. İşte bu "başka strateji"
 kısmının detayı, partitioner çeşitlerini konuşmamızı gerektiriyor.
 
-Producer tarafında bu davranış tek bir konfigürasyon satırıyla değiştirilir:
-
-```properties
-partitioner.class=org.apache.kafka.clients.producer.RoundRobinPartitioner
-```
-
-Şimdi seçeneklere tek tek bakalım.
+Producer tarafında bu davranış, hangi partitioner sınıfının kullanılacağını belirten
+tek bir konfigürasyon ayarıyla değiştirilir. Şimdi seçeneklere tek tek bakalım.
 
 ## 1. Hash-Based (Keyed) Partitioner — varsayılan
 
@@ -125,24 +120,13 @@ var. Eğer hash'e bırakırsan, Premium müşterinin milyonlarca event'i tek bir
 düşüp o partition'ı kilitleyebilir — ikinci yazıdaki **data skew** probleminin ta
 kendisi.
 
-Custom partitioner ile yükü izole edersin:
+Custom partitioner ile yükü şöyle izole edebilirsin: mesaj Premium bir müşteriden
+geliyorsa onu ayrılmış birkaç partition'a dağıt, Free müşterilerin hepsini ise tek bir
+partition'a topla. Şema olarak:
 
-```java
-public class TenantPartitioner implements Partitioner {
-    @Override
-    public int partition(String topic, Object key, byte[] keyBytes,
-                         Object value, byte[] valueBytes, Cluster cluster) {
-        int numPartitions = cluster.partitionsForTopic(topic).size();
-        // Premium tenant'ları ayrı partition'lara dağıt, Free'leri tek partition'a topla
-        if (isPremium(key)) {
-            return Math.abs(key.hashCode()) % (numPartitions - 1);
-        }
-        return numPartitions - 1; // son partition Free müşterilere ayrılmış
-    }
-
-    @Override public void close() {}
-    @Override public void configure(Map<String, ?> configs) {}
-}
+```
+Premium tenant  →  P0, P1, P2  (yük dağıtılır)
+Free tenant'lar →  P3          (hepsi tek partition'da toplanır)
 ```
 
 Buradaki fikir şu: partition seçimini artık matematik değil, **iş mantığı** belirliyor.
