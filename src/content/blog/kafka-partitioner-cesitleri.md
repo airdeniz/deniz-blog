@@ -149,8 +149,9 @@ dağılım oldukça dengesizdir:
 Neden bu kadar dengesiz?
 
 - **Hash-Based ezici çoğunlukta**, çünkü gerçek projelerin çoğunda veri tutarlılığı ve
-  işlem sırası her şeyden önemli. Aynı satırın `INSERT → UPDATE → DELETE` loglarının
-  sırayla işlenmesi gerekir; aksi halde hedefteki replika bozulur.
+  işlem sırası her şeyden önemli. Aynı kaydın (aynı primary key'e sahip satırın)
+  `INSERT → UPDATE → DELETE` event'lerinin sırayla işlenmesi gerekir; aksi halde
+  hedefteki replika bozulur.
 - **Sticky, anahtarsız veri için standart** hale geldi ve eski Round-Robin'i emekliye
   ayırdı.
 - **Custom nadir**, çünkü ancak varsayılan algoritmanın yetmediği özel durumlarda
