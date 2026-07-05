@@ -1,5 +1,5 @@
 ---
-title: 'Kafka''da Broker Nedir? (Oracle''dan Gelen Biri İçin)'
+title: 'Oracle''dan Gelen Biri İçin Kafka''da Broker Nedir?'
 description: 'Kafka serisinin dördüncü yazısı: broker gerçekte ne iş yapar? Topic bir tablo mudur, controller seçmek zorunlu mu, Raft konsensüs nasıl çalışır, 5 broker = 5 instance ne demek, lokaldeki portlar prod''da nasıl gerçek sunuculara dönüşür? Oracle client-server dünyasından gelen biri için Kafka broker''ını baştan kuruyorum.'
 pubDate: 2026-07-05
 tags: ['Kafka', 'Broker', 'KRaft', 'Raft', 'Dağıtık Sistemler', 'Backend']
