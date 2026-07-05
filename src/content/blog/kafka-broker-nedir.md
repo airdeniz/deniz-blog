@@ -92,7 +92,7 @@ dışında) tek sunucunun datafile'larında tutar.
 
 ## Controller sunucu seçmek zorunlu mu?
 
-Kısa cevap: **evet, zorunlu — ama seçimini sen yapmıyorsun.**
+Kısa cevap: **evet, zorunlu — adaylarını sen belirlersin ama aktif olanı Kafka seçer.**
 
 Bir cluster'ın sağlıklı çalışabilmesi için arka planda mutlaka bir **controller**
 olması gerekir. Controller, broker'lardan biridir ve kümenin **yönetiminden**
@@ -100,10 +100,19 @@ sorumludur: hangi broker ayakta, hangisi çöktü, çöken broker'daki partition
 lideri kim olacak gibi kararları o verir ve diğer tüm broker'lara tebliğ eder.
 Controller olmazsa kümede yönetim kaosu çıkar.
 
-Ama şunu net ayıralım: **sen elle "şu broker controller olsun" demezsin.** Sadece
-mimariyi kurarsın; aktif controller'ın hangisi olacağına Kafka'nın kendisi karar verir.
+Ama burada işi iki katmana ayırmak lazım, çünkü "seçiyorsun" da "seçmiyorsun" da tek
+başına yanıltıcı:
 
-Bu seçimin nasıl olduğu, Kafka'nın en çok değişen tarafı:
+- **Aday havuzunu sen belirlersin.** Özellikle KRaft'ta hangi broker'ların controller
+  olabileceğini `process.roles` ve `controller.quorum.voters` ile **açıkça sen
+  seçersin**. Yani "controller adayları şu üç node olsun" demek tamamen senin elinde.
+- **O havuzdan aktif (lider) controller'ı Kafka seçer.** Adaylar arasından o an fiilen
+  görevde olacak olanı ve bir çökme sonrası kimin devralacağını **elle sabitlemezsin** —
+  buna Kafka kendi içinde karar verir.
+
+Yani doğru ifade "sen hiç seçmezsin" değil; **adayları sen, aktif lideri Kafka.**
+
+Bu ayrımın nasıl işlediği, Kafka'nın en çok değişen tarafı:
 
 - **Eski mimari (ZooKeeper):** Broker'lar açıldığında ZooKeeper üzerinde bir yarışa
   girerdi; ilk yetişen controller olurdu. O çökerse ZooKeeper bunu algılar, kalanlar
