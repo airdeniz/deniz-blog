@@ -224,17 +224,23 @@ karıştırmamak lazım:
   doğal olarak hepsi birden gider — bu yüzden local'de gerçek dayanıklılık yoktur, sadece
   davranışı **simüle** edersin.
 
-Somut bir örnek: 5 broker'ın var ve 5 partition'lı bir `siparisler` topic'i açtın.
-İdeal senaryoda Kafka bu 5 partition'ın liderliğini 5 broker'a birer birer dağıtır,
-böylece okuma/yazma yükü 5 sürece eşit bölünür:
+Somut bir örnek: 5 broker'ın var ve 5 partition'lı bir `siparisler` topic'i açtın
+(replication factor = 2 olsun, yani her partition'ın 1 leader + 1 replica'sı var). İdeal
+senaryoda Kafka hem 5 partition'ın **liderliğini** hem de birer **replica'sını** 5
+broker'a dengeli dağıtır:
 
 ```
-Broker 1  →  P0 (leader)
-Broker 2  →  P1 (leader)
-Broker 3  →  P2 (leader)
-Broker 4  →  P3 (leader)
-Broker 5  →  P4 (leader)
+Broker 1  →  P0 (leader)    P4 (replica)
+Broker 2  →  P1 (leader)    P0 (replica)
+Broker 3  →  P2 (leader)    P1 (replica)
+Broker 4  →  P3 (leader)    P2 (replica)
+Broker 5  →  P4 (leader)    P3 (replica)
 ```
+
+Dikkat: bir partition'ın leader'ı ile replica'sı **hiçbir zaman aynı broker'da** olmaz —
+yoksa o broker çökünce hem leader hem yedek birden giderdi. Okuma/yazma yükü leader'lar
+sayesinde 5 sürece eşit bölünürken, replica'lar da bir broker çöktüğünde liderliği
+devralacak yedeği hazır tutar.
 
 Eğer bu 5 broker aynı zamanda KRaft controller rolündeyse, Raft'a göre karar alabilmek
 için gereken çoğunluk (quorum) `⌊5/2⌋ + 1 = 3`'tür. Yani 5 broker'ından 2'si çökse bile
