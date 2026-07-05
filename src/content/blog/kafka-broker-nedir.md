@@ -95,13 +95,32 @@ dışında) tek sunucunun datafile'larında tutar.
 Kısa cevap: **evet, zorunlu — adaylarını sen belirlersin ama aktif olanı Kafka seçer.**
 
 Bir cluster'ın sağlıklı çalışabilmesi için arka planda mutlaka bir **controller**
-olması gerekir. Controller, broker'lardan biridir ve kümenin **yönetiminden**
-sorumludur: hangi broker ayakta, hangisi çöktü, çöken broker'daki partition'ların yeni
-lideri kim olacak gibi kararları o verir ve diğer tüm broker'lara tebliğ eder.
-Controller olmazsa kümede yönetim kaosu çıkar.
+olması gerekir. Controller görevini kümedeki node'lardan biri üstlenir ve o node kümenin
+**yönetiminden** sorumlu olur: hangi broker ayakta, hangisi çöktü, çöken broker'daki
+partition'ların yeni lideri kim olacak gibi kararları o verir ve diğer tüm broker'lara
+tebliğ eder. Controller olmazsa kümede yönetim kaosu çıkar.
 
-Ama burada işi iki katmana ayırmak lazım, çünkü "seçiyorsun" da "seçmiyorsun" da tek
-başına yanıltıcı:
+Ama şu yanlış anlaşılmayı hemen düzeltmek lazım: controller olmak, bir broker'ın **asıl
+işinin yerine geçen** değil, çoğu zaman **üstüne binen** bir roldür. Yani aynı node hem
+normal broker işini — partition tutma, producer/consumer trafiğini karşılama, yani
+okuma/yazma — yapıp hem de controller görevini yürütebilir. İkisi birbirini dışlamaz.
+Bunun iki farklı kurulumu var:
+
+- **Combined (birleşik) mod:** Node hem `broker` hem `controller` rolündedir
+  (`process.roles=broker,controller`). Hem veriyi okuyup yazar hem yönetimi üstlenir.
+  ZooKeeper mimarisinde durum zaten hep böyleydi — aktif controller, seçilmiş **normal
+  bir veri broker'ıydı** ve yönetimi asıl işinin üstüne alırdı. KRaft'ta da küçük ve
+  geliştirme kümelerinde bu mod yaygındır.
+- **Dedicated (ayrılmış) mod:** Yalnızca controller rolüyle çalışan
+  (`process.roles=controller`) node'lar vardır; bunlar partition tutmaz, producer/consumer
+  trafiği görmez — tek işleri metadata'yı yönetmektir. Büyük üretim kümelerinde önerilen
+  budur, çünkü yönetim işi ağır veri yükünden **izole** edilmiş olur.
+
+Yani "controller sadece yöneten bir kutudur" demek eksik olur: dedicated modda öyledir
+ama combined modda o node aynı anda **hem veri broker'ı hem yöneticidir**.
+
+Bir de seçim tarafını iki katmana ayırmak lazım, çünkü "seçiyorsun" da "seçmiyorsun" da
+tek başına yanıltıcı:
 
 - **Aday havuzunu sen belirlersin.** Özellikle KRaft'ta hangi broker'ların controller
   olabileceğini `process.roles` ve `controller.quorum.voters` ile **açıkça sen
