@@ -10,10 +10,21 @@ interface Props {
 
 const { post, readTime } = Astro.props;
 const { title, description, pubDate, updatedDate, tags } = post.data;
+const sourceUrl = new URL(Astro.url.pathname, Astro.site).href;
 ---
 <BaseLayout title={title} description={description}>
   <article class="container post">
-    <a href={joinBase('blog/')} class="back">← Tüm yazılar</a>
+    <div class="post-toolbar no-print">
+      <a href={joinBase('blog/')} class="back">← Tüm yazılar</a>
+      <button type="button" class="pdf-btn" id="pdf-btn" aria-label="Bu yazıyı PDF olarak indir">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        <span>PDF indir</span>
+      </button>
+    </div>
 
     <header class="post-header">
       <div class="post-meta">
@@ -37,17 +48,49 @@ const { title, description, pubDate, updatedDate, tags } = post.data;
     {updatedDate && (
       <p class="updated muted">Son güncelleme: {formatDate(updatedDate)}</p>
     )}
+
+    <p class="print-only print-source">Kaynak: {sourceUrl}</p>
   </article>
 </BaseLayout>
 
+<script>
+  document
+    .getElementById('pdf-btn')
+    ?.addEventListener('click', () => window.print());
+</script>
+
 <style>
   .post { padding-top: 2.5rem; }
+  .post-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
   .back {
     display: inline-block;
     font-size: 0.9rem;
     color: var(--text-soft);
-    margin-bottom: 2rem;
   }
+  .pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-soft);
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.35em 0.85em;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .pdf-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .pdf-btn svg { flex-shrink: 0; }
+  .print-only { display: none; }
   .post-header { margin-bottom: 2.5rem; }
   .post-meta {
     font-size: 0.9rem;
