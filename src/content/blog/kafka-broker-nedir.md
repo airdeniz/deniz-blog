@@ -63,6 +63,15 @@ sorusunu cevaplar. Oracle'da bir siparişin son statüsünü tek satırda görü
 ise o siparişin `oluşturuldu → ödendi → kargolandı` yolculuğunun **her adımı ayrı bir
 event** olarak, sırayla log'da durur.
 
+Burada bir parantez açmak lazım, yoksa haksızlık olur: Oracle'da da geçmişi
+biriktirebilirsin — history/audit tabloları, journaling, `flashback` ya da elle tutulan
+bir `siparis_log` tablosu bunun için vardır. Yani "durum tutmak" tablonun bir
+kısıtlaması değil, **OLTP dünyasının tasarım geleneğidir**: OLTP sistemleri işlemin *son
+halini* verimli tutup güncellemek üzere kurgulanır, geçmişi biriktirmek ekstra bir
+tercihtir. Kafka'da ise denklem tersine döner — append-only log **varsayılan ve tek**
+davranıştır; "üzerine yaz" diye bir seçenek zaten yoktur. Fark, "yapılabilir mi"
+değil, **hangisinin doğal, hangisinin istisna** olduğudur.
+
 > Tablo bir fotoğraftır; topic bir film şerididir.
 
 Bir de teknik bir not: topic aslında **mantıksal** bir kavram. Fiziksel olarak veri,
