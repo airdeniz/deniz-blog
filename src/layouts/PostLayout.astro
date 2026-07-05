@@ -54,9 +54,77 @@ const sourceUrl = new URL(Astro.url.pathname, Astro.site).href;
 </BaseLayout>
 
 <script>
-  document
-    .getElementById('pdf-btn')
-    ?.addEventListener('click', () => window.print());
+  // Açık tema paleti — koyu tema seçili olsa bile PDF beyaz zeminde üretilsin
+  const LIGHT_VARS: Record<string, string> = {
+    '--bg': '#ffffff',
+    '--bg-soft': '#f2f1ec',
+    '--surface': '#ffffff',
+    '--border': '#e6e3db',
+    '--text': '#1c1b19',
+    '--text-soft': '#55524c',
+    '--text-muted': '#8a867e',
+    '--accent': '#c2410c',
+    '--accent-soft': '#fdece3',
+    '--code-bg': '#f4f2ee',
+  };
+
+  const btn = document.getElementById('pdf-btn') as HTMLButtonElement | null;
+  const label = btn?.querySelector('span');
+
+  btn?.addEventListener('click', async () => {
+    const article = document.querySelector('article.post');
+    if (!article || btn.disabled) return;
+
+    const original = label?.textContent ?? 'PDF indir';
+    btn.disabled = true;
+    if (label) label.textContent = 'Hazırlanıyor…';
+
+    // Ekrandaki kabuğu (toolbar) çıkarıp içeriği klonla, kaynak satırını göster
+    const clone = article.cloneNode(true) as HTMLElement;
+    clone.querySelectorAll('.no-print').forEach((el) => el.remove());
+    clone
+      .querySelectorAll<HTMLElement>('.print-only')
+      .forEach((el) => (el.style.display = 'block'));
+
+    // Ekran dışında, açık temaya zorlanmış bir kapsayıcıya yerleştir
+    const holder = document.createElement('div');
+    Object.entries(LIGHT_VARS).forEach(([k, v]) => holder.style.setProperty(k, v));
+    holder.style.position = 'fixed';
+    holder.style.left = '-10000px';
+    holder.style.top = '0';
+    holder.style.width = '800px';
+    holder.style.background = '#ffffff';
+    holder.style.color = '#1c1b19';
+    holder.style.padding = '28px 32px';
+    holder.appendChild(clone);
+    document.body.appendChild(holder);
+
+    const rawTitle = document.querySelector('h1')?.textContent?.trim() || 'yazi';
+    const filename =
+      rawTitle.replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, '-') + '.pdf';
+
+    try {
+      const { default: html2pdf } = await import('html2pdf.js');
+      await html2pdf()
+        .set({
+          margin: [10, 10, 12, 10],
+          filename,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+        })
+        .from(holder)
+        .save();
+    } catch (err) {
+      console.error('PDF oluşturulamadı:', err);
+      alert('PDF oluşturulurken bir sorun oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      holder.remove();
+      btn.disabled = false;
+      if (label) label.textContent = original;
+    }
+  });
 </script>
 
 <style>
@@ -89,6 +157,8 @@ const sourceUrl = new URL(Astro.url.pathname, Astro.site).href;
     transition: color 0.15s ease, border-color 0.15s ease;
   }
   .pdf-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .pdf-btn:disabled { opacity: 0.6; cursor: default; }
+  .pdf-btn:disabled:hover { color: var(--text-soft); border-color: var(--border); }
   .pdf-btn svg { flex-shrink: 0; }
   .print-only { display: none; }
   .post-header { margin-bottom: 2.5rem; }
