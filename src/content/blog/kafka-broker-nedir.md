@@ -81,6 +81,15 @@ broker'a bölünerek yazılır. Bu dağılımın detayını
 [ilk yazıda](/blog/kafka-cluster-mimarisi/) partition ve leader/replica üzerinden
 anlatmıştım.
 
+Bu ayrım da aslında Oracle'a yabancı değil. Oracle'da da tablo mantıksal bir
+nesnedir; veri fiziksel olarak tablonun "içinde" değil, **data block**'larda tutulur
+(block → extent → segment → **datafile**). Tablo, bu blokların üstünde duran bir
+gösterim katmanıdır. Kabaca eşleştirirsek: Kafka'daki **topic**, Oracle'daki **tabloya**;
+verinin gerçekten yazıldığı **partition/broker diski** ise Oracle'daki **block/datafile**
+katmanına denk gelir. İki dünyada da "mantıksal isim" ile "fiziksel depolama" birbirinden
+ayrıdır — sadece Kafka bu bölünmeyi birden fazla **makineye** yayar, Oracle ise (RAC
+dışında) tek sunucunun datafile'larında tutar.
+
 ## Controller sunucu seçmek zorunlu mu?
 
 Kısa cevap: **evet, zorunlu — ama seçimini sen yapmıyorsun.**
