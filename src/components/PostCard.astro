@@ -1,30 +1,33 @@
 ---
 import { formatDate, joinBase } from '../utils';
+import { useTranslations, type Locale } from '../i18n';
 
 interface Props {
-  id: string;
+  slug: string;
   title: string;
   description: string;
   pubDate: Date;
   tags?: string[];
+  lang?: Locale;
 }
 
-const { id, title, description, pubDate, tags = [] } = Astro.props;
-const url = joinBase(`blog/${id}/`);
+const { slug, title, description, pubDate, tags = [], lang = 'tr' } = Astro.props;
+const t = useTranslations(lang);
+const url = joinBase(lang === 'en' ? `en/blog/${slug}/` : `blog/${slug}/`);
 ---
 <article class="post-card">
   <a href={url} class="card-link">
     <div class="card-meta">
-      <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+      <time datetime={pubDate.toISOString()}>{formatDate(pubDate, lang)}</time>
     </div>
     <h2 class="card-title">{title}</h2>
     <p class="card-desc">{description}</p>
     {tags.length > 0 && (
       <div class="card-tags">
-        {tags.map((t) => <span class="tag">{t}</span>)}
+        {tags.map((tag) => <span class="tag">{tag}</span>)}
       </div>
     )}
-    <span class="card-more">Devamını oku →</span>
+    <span class="card-more">{t('readMore')}</span>
   </a>
 </article>
 

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-import { formatDate, joinBase } from '../utils';
+import { formatDate, joinBase, postLocale } from '../utils';
+import { useTranslations } from '../i18n';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -10,25 +11,29 @@ interface Props {
 
 const { post, readTime } = Astro.props;
 const { title, description, pubDate, updatedDate, tags } = post.data;
+const lang = postLocale(post.id);
+const t = useTranslations(lang);
+const backHref = joinBase(lang === 'en' ? 'en/blog/' : 'blog/');
 const sourceUrl = new URL(Astro.url.pathname, Astro.site).href;
 ---
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} lang={lang}>
   <article class="container post">
     <div class="post-toolbar no-print">
-      <a href={joinBase('blog/')} class="back">← Tüm yazılar</a>
-      <button type="button" class="pdf-btn" id="pdf-btn" aria-label="Bu yazıyı PDF olarak indir">
+      <a href={backHref} class="back">{t('backToPosts')}</a>
+      <button type="button" class="pdf-btn" id="pdf-btn" aria-label={t('pdfDownload')}
+        data-label={t('pdfDownload')} data-preparing={t('pdfPreparing')} data-error={t('pdfError')}>
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
           <polyline points="7 10 12 15 17 10" />
           <line x1="12" y1="15" x2="12" y2="3" />
         </svg>
-        <span>PDF indir</span>
+        <span>{t('pdfDownload')}</span>
       </button>
     </div>
 
     <header class="post-header">
       <div class="post-meta">
-        <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+        <time datetime={pubDate.toISOString()}>{formatDate(pubDate, lang)}</time>
         <span class="dot">·</span>
         <span>{readTime}</span>
       </div>
@@ -46,10 +51,10 @@ const sourceUrl = new URL(Astro.url.pathname, Astro.site).href;
     </div>
 
     {updatedDate && (
-      <p class="updated muted">Son güncelleme: {formatDate(updatedDate)}</p>
+      <p class="updated muted">{t('updatedOn')} {formatDate(updatedDate, lang)}</p>
     )}
 
-    <p class="print-only print-source">Kaynak: {sourceUrl}</p>
+    <p class="print-only print-source">{t('source')} {sourceUrl}</p>
   </article>
 </BaseLayout>
 
@@ -70,14 +75,16 @@ const sourceUrl = new URL(Astro.url.pathname, Astro.site).href;
 
   const btn = document.getElementById('pdf-btn') as HTMLButtonElement | null;
   const label = btn?.querySelector('span');
+  const T_PREPARING = btn?.dataset.preparing ?? 'Hazırlanıyor…';
+  const T_ERROR = btn?.dataset.error ?? 'PDF oluşturulurken bir sorun oluştu. Lütfen tekrar deneyin.';
 
   btn?.addEventListener('click', async () => {
     const article = document.querySelector('article.post');
     if (!article || btn.disabled) return;
 
-    const original = label?.textContent ?? 'PDF indir';
+    const original = label?.textContent ?? btn.dataset.label ?? 'PDF';
     btn.disabled = true;
-    if (label) label.textContent = 'Hazırlanıyor…';
+    if (label) label.textContent = T_PREPARING;
 
     // Ekrandaki kabuğu (toolbar) çıkarıp içeriği klonla, kaynak satırını göster
     const clone = article.cloneNode(true) as HTMLElement;
@@ -118,7 +125,7 @@ const sourceUrl = new URL(Astro.url.pathname, Astro.site).href;
         .save();
     } catch (err) {
       console.error('PDF oluşturulamadı:', err);
-      alert('PDF oluşturulurken bir sorun oluştu. Lütfen tekrar deneyin.');
+      alert(T_ERROR);
     } finally {
       holder.remove();
       btn.disabled = false;

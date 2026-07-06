@@ -13,6 +13,13 @@ import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
   site: 'https://deniz-blog.vercel.app',
+  i18n: {
+    defaultLocale: 'tr',
+    locales: ['tr', 'en'],
+    routing: {
+      prefixDefaultLocale: false,
+    },
+  },
   integrations: [sitemap()],
   markdown: {
     shikiConfig: {

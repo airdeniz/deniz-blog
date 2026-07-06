@@ -1,0 +1,46 @@
+---
+// Dil anahtarı — tema butonuyla aynı boyutta (38×38).
+// TR sayfadayken "EN" gösterir ve /en/... karşılığına götürür;
+// EN sayfadayken "TR" gösterir ve köke geri götürür.
+import { useTranslations, type Locale } from '../i18n';
+
+interface Props {
+  lang: Locale;
+  altPath: string;
+}
+
+const { lang, altPath } = Astro.props;
+const t = useTranslations(lang);
+---
+<a
+  class="lang-toggle"
+  href={altPath}
+  aria-label={t('langToggleLabel')}
+  title={t('langToggleLabel')}
+>
+  {t('langToggleText')}
+</a>
+
+<style>
+  .lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-soft);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: all 0.15s ease;
+  }
+  .lang-toggle:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    text-decoration: none;
+  }
+</style>

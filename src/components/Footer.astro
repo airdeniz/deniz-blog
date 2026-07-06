@@ -1,5 +1,13 @@
 ---
 import { SITE } from '../config';
+import { useTranslations, type Locale } from '../i18n';
+
+interface Props {
+  lang?: Locale;
+}
+
+const { lang = 'tr' } = Astro.props;
+const t = useTranslations(lang);
 const year = new Date().getFullYear();
 const hasUser = (url: string) => !url.includes('KULLANICIADI');
 ---
@@ -8,7 +16,7 @@ const hasUser = (url: string) => !url.includes('KULLANICIADI');
     <span class="muted">© {year} {SITE.author}</span>
     <div class="socials">
       {SITE.email && (
-        <a href={`mailto:${SITE.email}`} aria-label="E-posta">E-posta</a>
+        <a href={`mailto:${SITE.email}`} aria-label={t('footerEmail')}>{t('footerEmail')}</a>
       )}
       {SITE.github && hasUser(SITE.github) && (
         <a href={SITE.github} target="_blank" rel="noopener">GitHub</a>

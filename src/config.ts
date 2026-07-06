@@ -11,9 +11,4 @@ export const SITE = {
   linkedin: 'https://www.linkedin.com/in/deniz-isik-ofc/',
 };
 
-// Header'daki gezinme menüsü
-export const NAV = [
-  { label: 'Anasayfa', href: '/' },
-  { label: 'Yazılar', href: '/blog' },
-  { label: 'Hakkımda', href: '/hakkimda' },
-];
+// Not: Gezinme menüsü (NAV) ve dile bağlı metinler src/i18n.ts içindedir.

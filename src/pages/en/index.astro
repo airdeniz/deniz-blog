@@ -1,16 +1,16 @@
 ---
 import { getCollection } from 'astro:content';
-import BaseLayout from '../layouts/BaseLayout.astro';
-import PostCard from '../components/PostCard.astro';
-import { SITE } from '../config';
-import { joinBase, postSlug } from '../utils';
-import { SITE_DESCRIPTION, useTranslations } from '../i18n';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { SITE } from '../../config';
+import { joinBase, postSlug } from '../../utils';
+import { SITE_DESCRIPTION, useTranslations } from '../../i18n';
 
-const lang = 'tr';
+const lang = 'en';
 const t = useTranslations(lang);
 
 const posts = (
-  await getCollection('blog', ({ id, data }) => !data.draft && id.startsWith('tr/'))
+  await getCollection('blog', ({ id, data }) => !data.draft && id.startsWith('en/'))
 ).sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 const latest = posts.slice(0, 5);
 ---
@@ -19,15 +19,15 @@ const latest = posts.slice(0, 5);
     <h1>{t('heroGreeting')} {SITE.author} 👋</h1>
     <p class="hero-text">{SITE_DESCRIPTION[lang]}</p>
     <div class="hero-actions">
-      <a href={joinBase('blog/')} class="btn btn-primary">{t('heroReadPosts')}</a>
-      <a href={joinBase('hakkimda/')} class="btn">{t('heroAbout')}</a>
+      <a href={joinBase('en/blog/')} class="btn btn-primary">{t('heroReadPosts')}</a>
+      <a href={joinBase('en/about/')} class="btn">{t('heroAbout')}</a>
     </div>
   </section>
 
   <section class="container posts">
     <div class="section-head">
       <h2>{t('latestPosts')}</h2>
-      {posts.length > 5 && <a href={joinBase('blog/')} class="see-all">{t('seeAll')}</a>}
+      {posts.length > 5 && <a href={joinBase('en/blog/')} class="see-all">{t('seeAll')}</a>}
     </div>
     {latest.length === 0 ? (
       <p class="muted">{t('noPosts')}</p>
