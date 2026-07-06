@@ -1,5 +1,5 @@
 ---
-title: 'Monolitten Gelen Biri İçin: git PowerShell''de Nereden Tanınıyor, Bu Ekosistemi Kim Yönetiyor?'
+title: 'Monolitten Gelen Biri İçin: Bu Araçlar Birbirini Nereden Tanıyor, Ekosistemi Kim Yönetiyor?'
 description: 'Oracle gibi her şeyi tek çatı altında toplayan bir dünyadan gelince, açık kaynak araçlarının birbirine lego gibi oturması insana sihir gibi geliyor. Peki git PowerShell''de nasıl tanınıyor, pip install ne yapıyor, Airflow ile Spark hangi sözleşmeyle konuşuyor ve en önemlisi — bunları kim yönetiyor? Merkezde kimsenin olmadığı bir düzeni baştan kuruyorum.'
 pubDate: 2026-07-06
 tags: ['Açık Kaynak', 'PATH', 'CLI', 'Python', 'Ekosistem', 'Standartlar', 'Backend']
