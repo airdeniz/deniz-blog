@@ -7,10 +7,10 @@ draft: false
 ---
 
 Bu yazı, Kafka serisinin ikinci parçası. İlk yazıda bir Kafka cluster'ının nasıl
-kurulduğunu; broker'ları, partition dağılımını, replikasyonu, CDC ile veri girişini
-ve consumer group'ları konuşmuştuk
-([buradan okuyabilirsin](/blog/kafka-cluster-mimarisi/)). Şimdi bir tık aşağı inip
-**tek bir mesaj seviyesine** bakıyoruz: bir mesaj hangi partition'a yazılır, offset
+kurulduğu; broker'lar, partition dağılımı, replikasyon, CDC ile veri girişi
+ve consumer group'lar ele alınmıştı
+([ilk yazıya buradan ulaşılabilir](/blog/kafka-cluster-mimarisi/)). Şimdi bir tık aşağı inip
+**tek bir mesaj seviyesine** bakılıyor: bir mesaj hangi partition'a yazılır, offset
 ne işe yarar ve Kafka sıralama konusunda tam olarak neyi garanti eder?
 
 ## Bir mesaj hangi partition'a yazılır?
@@ -26,7 +26,7 @@ bir partition'a yazılır. Yazılacağı partition şu mekanizma ile belirlenir:
 hedef partition = hash(key) % partition_sayısı
 ```
 
-Diyelim 3 partition var (P0, P1, P2) ve key olarak `order_id` kullanılıyor:
+Örneğin 3 partition var (P0, P1, P2) ve key olarak `order_id` kullanılıyor:
 
 ```
 order_id = 5   →  hash(5)  = 7634  →  7634 % 3 = 1  →  P1
@@ -40,7 +40,7 @@ P1'e düşer. Böylece aynı siparişe ait tüm event'ler hep aynı partition'da
 değişti → silindi" event'leri yanlış sırayla işlenirse, consumer tarafında
 tutarsız bir sonuç ortaya çıkar.
 
-### Partition sayısını en baştan doğru seçin
+### Partition sayısı en baştan doğru seçilmeli
 
 Fakat bu partition sayısı, sistem kurulurken çok iyi tespit edilmelidir. İhtiyaç 3
 ise, gelecekte daha fazla kapasite gerekebileceğinden en az **12 veya 24**
@@ -57,7 +57,7 @@ siparişin event'leri iki farklı partition'a dağılırsa, sıra (offset) karı
 
 ### Dikkat: hot key ve data skew
 
-Entity ID'yi (bizim örneğimizde `order_id`) partition key yapmak, sıralama
+Entity ID'yi (buradaki örnekte `order_id`) partition key yapmak, sıralama
 açısından doğru tasarım. Ama burada gözden kaçan bir risk var: eğer bir entity
 diğerlerinden **kat kat fazla** event üretiyorsa, o key'in düştüğü partition ve
 dolayısıyla o partition'ın leader'ı olan broker aşırı yüklenir. Buna **data skew**
@@ -68,14 +68,14 @@ milyonlarca kayıt üretiyorsa, o siparişin key'i tek bir partition'ı tıka ba
 doldururken diğer partition'lar neredeyse boş bekler. Yük dengesiz dağılır.
 
 Böyle durumlarda, sıralama ihtiyacını da gözeterek **bileşik bir key** (örneğin
-`siparis_no + statü grubu`) kullanıp yükü biraz daha dağıtabilirsiniz.
+`siparis_no + statü grubu`) kullanıp yük biraz daha dağıtılabilir.
 
 ## Offset
 
 Her partition'a yazılan mesaj, sıralı bir **offset** numarası alır: 0, 1, 2, 3…
 Consumer bir partition'ı okuduğunda, mesajları bu offset sırasıyla okur.
 
-Burada bilmemiz gereken önemli bir konu daha var: tek bir Kafka topic'i
+Burada bilinmesi gereken önemli bir konu daha var: tek bir Kafka topic'i
 **birden fazla kaynaktan** beslenebilir. Örneğin iki farklı PostgreSQL, birbirinden
 bağımsız şekilde aynı topic'e data iletiyor olabilir ve bunlar birbirinden bağımsız
 **LSN** (PostgreSQL içindeki sıralama numarası) üretir. Ya da birden fazla CDC
@@ -92,7 +92,7 @@ daha da zorunlu kılar.
 **Birincisi: sıralama.** Aynı partition içindeki mesajlar offset sırasıyla okunur.
 Consumer, offset 5'teki mesajı offset 8'den önce okur.
 
-**İkincisi: kaldığın yerden devam edebilme.** Consumer çöküp tekrar ayağa
+**İkincisi: kalınan yerden devam edebilme.** Consumer çöküp tekrar ayağa
 kalktığında "en son offset 42'ye kadar okumuştum" der ve 43'ten devam eder. Offset
 olmasaydı, consumer her seferinde en baştan okumak ya da hangi mesajları okuduğunu
 kendisi bir yerde tutmak zorunda kalırdı.
@@ -121,7 +121,7 @@ tasarlanıp tasarlanmadığı Kafka'nın sorumluluğunda değildir.
 ## Kafka'dan hedefe nasıl yazılır? Connect mi, Flink/Spark mı?
 
 Peki bu veriyi Kafka'dan alıp nihai bir hedefe — örneğin bir **Iceberg** tablosuna
-ya da **BigQuery**'ye — yazmak istediğimizde ne kullanırız?
+ya da **BigQuery**'ye — yazmak gerektiğinde ne kullanılır?
 
 Yaygın bir yanılgı, arada mutlaka bir **Flink** ya da **Spark** olması gerektiğini
 sanmak. Oysa şart değil. **Kafka Connect** (daha doğrusu bir **Sink Connector**),
@@ -138,19 +138,19 @@ Ayrım noktası **transformation ihtiyacı**:
   Spark Structured Streaming olayları küçük gruplar halinde işlediği (micro-batch) için
   gecikmesi biraz daha yüksektir ama batch ekosistemiyle entegrasyonu daha kolaydır.
 
-Yani kendinize sormanız gereken tek soru şu: *"Veriyi hedefe yazmadan önce yolda
-ağır bir dönüşüme sokmam gerekiyor mu?"* Cevap **hayır**sa Kafka Connect, **evet**se
+Yani sorulması gereken tek soru şu: *"Veriyi hedefe yazmadan önce yolda
+ağır bir dönüşüme sokmak gerekiyor mu?"* Cevap **hayır**sa Kafka Connect, **evet**se
 Flink/Spark.
 
 ## Retention: Kafka bir queue değildir
 
-Son olarak Kafka **retention** konusuna değinelim. Kafka, mesajları yazdıktan sonra
-silmez; varsayılan olarak **7 gün** diskinde tutar. Fakat bu 7 günü isterseniz 7
-dakika, isterseniz 7 yıl yapabilirsiniz. Bu tamamen tabi olduğunuz regülasyonlar ve
-disk boyutunuzla alakalıdır.
+Son olarak Kafka **retention** konusuna bakmak gerekiyor. Kafka, mesajları yazdıktan sonra
+silmez; varsayılan olarak **7 gün** diskinde tutar. Fakat bu 7 gün istenirse 7
+dakika, istenirse 7 yıl yapılabilir. Bu tamamen tabi olunan regülasyonlar ve
+disk boyutuyla alakalıdır.
 
-İşte tam da bu noktada Kafka'nın geleneksel bir **message queue** olmadığını
-anlıyoruz:
+İşte tam da bu noktada Kafka'nın geleneksel bir **message queue** olmadığı
+ortaya çıkıyor:
 
 - Bir queue'da mesaj, consumer tarafından okunduğu anda kuyruktan silinir. Bir kere
   okunur ve gider.

@@ -1,6 +1,6 @@
 ---
 title: 'Oracle''dan Gelen Biri İçin Kafka''da Broker Nedir?'
-description: 'Kafka serisinin dördüncü yazısı: broker gerçekte ne iş yapar? Topic bir tablo mudur, controller seçmek zorunlu mu, Raft konsensüs nasıl çalışır, 5 broker = 5 instance ne demek, lokaldeki portlar prod''da nasıl gerçek sunuculara dönüşür? Oracle client-server dünyasından gelen biri için Kafka broker''ını baştan kuruyorum.'
+description: 'Kafka serisinin dördüncü yazısı: broker gerçekte ne iş yapar? Topic bir tablo mudur, controller seçmek zorunlu mu, Raft konsensüs nasıl çalışır, 5 broker = 5 instance ne demek, lokaldeki portlar prod''da nasıl gerçek sunuculara dönüşür? Oracle client-server dünyasından gelen biri için Kafka broker''ı baştan kuruluyor.'
 pubDate: 2026-07-05
 tags: ['Kafka', 'Broker', 'KRaft', 'Raft', 'Dağıtık Sistemler', 'Backend']
 draft: false
@@ -11,13 +11,13 @@ kurulduğunu ([1. yazı](/blog/kafka-cluster-mimarisi/)), bir mesajın hangi par
 düşüp offset'le nasıl sıralandığını ([2. yazı](/blog/kafka-partition-offset-siralama/))
 ve bu kararı veren partitioner'ları ([3. yazı](/blog/kafka-partitioner-cesitleri/))
 konuşmuştuk. Bu üçünde de broker sürekli sahnedeydi ama hep başka kavramların
-(partition, leader, KRaft) içinden geçerek. Bu yazıda kamerayı doğrudan **broker'ın**
-üzerine çeviriyorum.
+(partition, leader, KRaft) içinden geçerek. Bu yazıda kamera doğrudan **broker'ın**
+üzerine çevriliyor.
 
-Bunu yaparken de kendi geldiğim yeri kullanacağım: ben **Oracle ekosisteminden**
-geliyorum, yani kafamda yıllardır oturmuş bir **client-server** mantığı var. Kafka'ya
-ilk baktığımda en çok ters köşe olduğum şey de buydu. O yüzden broker'ı sıfırdan,
-Oracle refleksleriyle kıyaslayarak kuracağım.
+Bunu yaparken belli bir çıkış noktası kullanılıyor: **Oracle ekosisteminden** gelen
+birinin kafasında yıllardır oturmuş bir **client-server** mantığı vardır. Kafka'ya ilk
+bakışta en çok ters köşe eden şey de budur. O yüzden broker sıfırdan, Oracle
+refleksleriyle kıyaslanarak kuruluyor.
 
 ## Broker nedir?
 
@@ -55,16 +55,16 @@ mesaj akışını (`kullanici_hareketleri` topic'i) bir arada tutar. İkisi de b
 | Kriter | Tablo (Oracle) | Topic (Kafka) |
 | --- | --- | --- |
 | **Veri yapısı** | Satır/sütun; `UPDATE`/`DELETE` ile değiştirilir | Append-only log; veri sadece **sona eklenir**, geçmiş değişmez |
-| **Süreklilik** | Sen silene kadar kalıcı | Genelde bir retention süresi sonunda (örn. 7 gün) otomatik düşer |
+| **Süreklilik** | Silinene kadar kalıcı | Genelde bir retention süresi sonunda (örn. 7 gün) otomatik düşer |
 | **Amaç** | Mevcut **durumu** (state) tutar | Akıp giden **olayları** (event/stream) taşır |
 
 Yani tablo "şu an dünyanın hali ne?" sorusunu; topic ise "sırayla neler oldu?"
-sorusunu cevaplar. Oracle'da bir siparişin son statüsünü tek satırda görürsün; Kafka'da
+sorusunu cevaplar. Oracle'da bir siparişin son statüsü tek satırda görülür; Kafka'da
 ise o siparişin `oluşturuldu → ödendi → kargolandı` yolculuğunun **her adımı ayrı bir
 event** olarak, sırayla log'da durur.
 
-Burada bir parantez açmak lazım, yoksa haksızlık olur: Oracle'da da geçmişi
-biriktirebilirsin — history/audit tabloları, journaling, `flashback` ya da elle tutulan
+Burada bir parantez açmak lazım, yoksa haksızlık olur: Oracle'da da geçmiş
+biriktirilebilir — history/audit tabloları, journaling, `flashback` ya da elle tutulan
 bir `siparis_log` tablosu bunun için vardır. Yani "durum tutmak" tablonun bir
 kısıtlaması değil, **OLTP dünyasının tasarım geleneğidir**: OLTP sistemleri işlemin *son
 halini* verimli tutup güncellemek üzere kurgulanır, geçmişi biriktirmek ekstra bir
@@ -79,7 +79,7 @@ topic'in bölündüğü **partition'larda** ve o partition'ların dağıldığı
 diskinde** durur. Yani bir topic tek bir yerde duran bir dosya değildir; birden fazla
 broker'a bölünerek yazılır. Bu dağılımın detayını
 [ilk yazıda](/blog/kafka-cluster-mimarisi/) partition ve leader/replica üzerinden
-anlatmıştım.
+anlatılmıştı.
 
 Bu ayrım da aslında Oracle'a yabancı değil. Oracle'da da tablo mantıksal bir
 nesnedir; veri fiziksel olarak tablonun "içinde" değil, **data block**'larda tutulur
@@ -92,7 +92,7 @@ dışında) tek sunucunun datafile'larında tutar.
 
 ## Controller sunucu seçmek zorunlu mu?
 
-Kısa cevap: **evet, zorunlu — adaylarını sen belirlersin ama aktif olanı Kafka seçer.**
+Kısa cevap: **evet, zorunlu — adayları geliştirici belirler ama aktif olanı Kafka seçer.**
 
 Bir cluster'ın sağlıklı çalışabilmesi için arka planda mutlaka bir **controller**
 olması gerekir. Controller görevini kümedeki node'lardan biri üstlenir ve o node kümenin
@@ -119,17 +119,18 @@ Bunun iki farklı kurulumu var:
 Yani "controller sadece yöneten bir kutudur" demek eksik olur: dedicated modda öyledir
 ama combined modda o node aynı anda **hem veri broker'ı hem yöneticidir**.
 
-Bir de seçim tarafını iki katmana ayırmak lazım, çünkü "seçiyorsun" da "seçmiyorsun" da
-tek başına yanıltıcı:
+Bir de seçim tarafını iki katmana ayırmak lazım, çünkü "seçilir" de "seçilmez" de tek
+başına yanıltıcı:
 
-- **Aday havuzunu sen belirlersin.** Özellikle KRaft'ta hangi broker'ların controller
-  olabileceğini `process.roles` ve `controller.quorum.voters` ile **açıkça sen
-  seçersin**. Yani "controller adayları şu üç node olsun" demek tamamen senin elinde.
+- **Aday havuzunu geliştirici belirler.** Özellikle KRaft'ta hangi broker'ların
+  controller olabileceği `process.roles` ve `controller.quorum.voters` ile **açıkça
+  belirlenir**. Yani "controller adayları şu üç node olsun" demek tamamen geliştiricinin
+  elindedir.
 - **O havuzdan aktif (lider) controller'ı Kafka seçer.** Adaylar arasından o an fiilen
-  görevde olacak olanı ve bir çökme sonrası kimin devralacağını **elle sabitlemezsin** —
-  buna Kafka kendi içinde karar verir.
+  görevde olacak olan ve bir çökme sonrası kimin devralacağı **elle sabitlenmez** — buna
+  Kafka kendi içinde karar verir.
 
-Yani doğru ifade "sen hiç seçmezsin" değil; **adayları sen, aktif lideri Kafka.**
+Yani doğru ifade "hiç seçilmez" değil; **adayları geliştirici, aktif lideri Kafka.**
 
 Bu ayrımın nasıl işlediği, Kafka'nın en çok değişen tarafı:
 
@@ -137,14 +138,14 @@ Bu ayrımın nasıl işlediği, Kafka'nın en çok değişen tarafı:
   girerdi; ilk yetişen controller olurdu. O çökerse ZooKeeper bunu algılar, kalanlar
   arasından yenisi seçilirdi.
 - **Yeni mimari (KRaft — Kafka Raft Metadata Mode):** ZooKeeper tamamen devreden çıktı.
-  Artık bazı broker'ları doğrudan **controller rolüyle** (`process.roles=controller`)
-  başlatırsın; bunlar kendi aralarında bir **oylama** yaparak lider controller'ı seçer.
+  Artık bazı broker'lar doğrudan **controller rolüyle** (`process.roles=controller`)
+  başlatılır; bunlar kendi aralarında bir **oylama** yaparak lider controller'ı seçer.
 
 İşte bu oylamanın kalbindeki algoritma **Raft**. O yüzden bir sonraki durak orası.
 
 > ZooKeeper'dan KRaft'a geçişi ve controller sayısının neden hep tek verildiğini
 > ([split-brain](/blog/kafka-cluster-mimarisi/) meselesi) ilk yazıda ayrıca
-> işlemiştim. Burada odak Raft'ın kendisinde.
+> işlenmişti. Burada odak Raft'ın kendisinde.
 
 ## Raft konsensüs algoritması nedir?
 
@@ -196,7 +197,7 @@ kesinleştirir. Tutarlılık garantisi buradan gelir.
 
 ### Neden bu kadar güvenli? (Fault Tolerance)
 
-Diyelim 5 sunuculu bir quorum'un var ve 2'si çöktü. Elinde kalan 3 sunucu, toplam 5'in
+Diyelim 5 sunuculu bir quorum var ve 2'si çöktü. Kalan 3 sunucu, toplam 5'in
 çoğunluğunu oluşturduğu için hemen yeni lider seçip **veri kaybı olmadan** çalışmaya
 devam eder. Ama 3 sunucu birden çökerse, kalan 2 çoğunluğu sağlayamaz; sistem **veri
 tutarsızlığını önlemek için** kendini kilitler ve yeni yazma kabul etmez. "Emin
@@ -204,27 +205,27 @@ değilsem yanlış yazmam" diyor.
 
 Tolere edilen çökme sayısının neden `(N − 1) / 2` olduğunu ve bu yüzden controller
 sayısının hep **tek** verildiğini [ilk yazıdaki quorum
-tablosunda](/blog/kafka-cluster-mimarisi/) göstermiştim.
+tablosunda](/blog/kafka-cluster-mimarisi/) gösterilmişti.
 
 ## 5 broker = 5 Kafka instance'ı
 
 Şimdi kafada tam otursun diye somutlaştıralım. **5 broker'lı bir cluster**, arka planda
 çalışan **5 bağımsız Kafka süreci** demektir. Ne bir eksik ne bir fazla. Kaç tane aktif
-Kafka süreci çalıştırıyorsan, o kadar broker'ın var.
+Kafka süreci çalıştırılıyorsa, o kadar broker vardır.
 
 Peki bu 5 süreç fiziksel olarak nerede duruyor? İki senaryo var ve ikisini birbirine
 karıştırmamak lazım:
 
-- **Üretim (production):** 5 instance'ı **5 ayrı makineye** (fiziksel sunucu, VM ya da
-  container) kurarsın. Amaç yüksek erişilebilirlik: biri donanımdan çökse, elektriği
+- **Üretim (production):** 5 instance **5 ayrı makineye** (fiziksel sunucu, VM ya da
+  container) kurulur. Amaç yüksek erişilebilirlik: biri donanımdan çökse, elektriği
   gitse, network'ü kopsa diğer 4'ü çalışmaya devam eder.
-- **Geliştirme (local):** Kendi bilgisayarında, **tek makinede** 5 instance'ı ayağa
-  kaldırabilirsin. Her birine farklı bir `broker.id` ve çakışmasınlar diye farklı bir
-  **port** verirsin (9092, 9093, 9094, 9095, 9096). Ama bilgisayarın kapanınca
-  doğal olarak hepsi birden gider — bu yüzden local'de gerçek dayanıklılık yoktur, sadece
-  davranışı **simüle** edersin.
+- **Geliştirme (local):** Tek bir bilgisayarda, **tek makinede** 5 instance ayağa
+  kaldırılabilir. Her birine farklı bir `broker.id` ve çakışmasınlar diye farklı bir
+  **port** verilir (9092, 9093, 9094, 9095, 9096). Ama bilgisayar kapanınca doğal olarak
+  hepsi birden gider — bu yüzden local'de gerçek dayanıklılık yoktur, sadece davranış
+  **simüle** edilir.
 
-Somut bir örnek: 5 broker'ın var ve 5 partition'lı bir `siparisler` topic'i açtın
+Somut bir örnek: 5 broker var ve 5 partition'lı bir `siparisler` topic'i açıldı
 (replication factor = 2 olsun, yani her partition'ın 1 leader + 1 replica'sı var). İdeal
 senaryoda Kafka hem 5 partition'ın **liderliğini** hem de birer **replica'sını** 5
 broker'a dengeli dağıtır:
@@ -243,17 +244,17 @@ sayesinde 5 sürece eşit bölünürken, replica'lar da bir broker çöktüğün
 devralacak yedeği hazır tutar.
 
 Eğer bu 5 broker aynı zamanda KRaft controller rolündeyse, Raft'a göre karar alabilmek
-için gereken çoğunluk (quorum) `⌊5/2⌋ + 1 = 3`'tür. Yani 5 broker'ından 2'si çökse bile
-kalan 3'ü sistemi ayakta tutar — yukarıda anlattığımız mekanizmanın ta kendisi.
+için gereken çoğunluk (quorum) `⌊5/2⌋ + 1 = 3`'tür. Yani 5 broker'dan 2'si çökse bile
+kalan 3'ü sistemi ayakta tutar — yukarıda anlatılan mekanizmanın ta kendisi.
 
 ## Lokaldeki portlar, prod'da nasıl gerçek sunucuya dönüşüyor?
 
-Yukarıda "local'de port, prod'da ayrı makine" dedim. Peki geçiş tam olarak nasıl
-oluyor? İşte Oracle refleksiyle en çok merak ettiğim şey buydu ve cevabı şaşırtıcı
-derecede temiz.
+Yukarıda "local'de port, prod'da ayrı makine" denmişti. Peki geçiş tam olarak nasıl
+oluyor? Oracle refleksiyle en çok merak edilen şey de budur ve cevabı şaşırtıcı derecede
+temiz.
 
-Lokalde bir `docker-compose.yml` yazar, içine 3 (veya 5) broker tanımlar ve bunları
-localhost'un farklı portlarına bağlarsın:
+Lokalde bir `docker-compose.yml` yazılır, içine 3 (veya 5) broker tanımlanır ve bunlar
+localhost'un farklı portlarına bağlanır:
 
 ```
 local
@@ -262,9 +263,9 @@ local
   broker 3 → localhost:9094
 ```
 
-Amaç, yazdığın kodun **çok broker'lı** bir ortama nasıl tepki verdiğini kendi
-makinende test etmek: "Bir broker'ı kapatırsam kodum patlıyor mu, yoksa öbür broker'a
-sorunsuz mu geçiyor?"
+Amaç, yazılan kodun **çok broker'lı** bir ortama nasıl tepki verdiğini kendi makinede
+test etmek: "Bir broker kapatılırsa kod patlıyor mu, yoksa öbür broker'a sorunsuz mu
+geçiyor?"
 
 Prod'a çıkınca artık portlar değil, **IP/DNS** konuşur. Her sunucuda standart Kafka
 portu (9092) açıktır ama makineler ayrıdır:
@@ -289,12 +290,12 @@ kullanıyorlar?" dediği yer burası. İki farklı gözle bakalım.
 
 ### Yazılımcı gözünden: "bootstrap servers" ve akıllı client
 
-Oracle'da bir uygulamayı bağlarken **tek bir connection string** verirsin
-(`jdbc:oracle:thin:@//host:port/service`) ve o sunucuya bağlanırsın. Sunucu akıllıdır,
+Oracle'da bir uygulamayı bağlarken **tek bir connection string** verilir
+(`jdbc:oracle:thin:@//host:port/service`) ve o sunucuya bağlanılır. Sunucu akıllıdır,
 gerisini o halleder.
 
-Kafka'da ise koda tek bir sunucu adresi yazmazsın. Bir **bootstrap servers** listesi
-verirsin:
+Kafka'da ise koda tek bir sunucu adresi yazılmaz. Bir **bootstrap servers** listesi
+verilir:
 
 ```
 kafka.bootstrap.servers = "10.0.1.10:9092, 10.0.1.11:9092, 10.0.1.12:9092"
@@ -310,32 +311,31 @@ Sihir burada:
    yazacağı zaman doğrudan gidip o partition'ın **leader broker'ıyla** konuşur.
 
 Fark tam da burada. Oracle'da akıl sunucudadır, client pasiftir. Kafka'da **akıl
-client'tadır**; broker sadece log tutar. Bu yüzden araya bir load balancer koymana bile
+client'tadır**; broker sadece log tutar. Bu yüzden araya bir load balancer koymaya bile
 gerek kalmaz — client zaten haritayı bildiği için doğru broker'a kendi gider. Bootstrap
-listesine birden fazla adres yazmanın sebebi de şu: ilk bağlanmaya çalıştığın broker
+listesine birden fazla adres yazmanın sebebi de şu: ilk bağlanılmaya çalışılan broker
 çökmüş olabilir, client listedeki bir sonrakini dener.
 
 ### Veri mühendisi gözünden: gerçek zamanlı boru hatları
 
-Senin Oracle geçmişinden bildiğin **ETL** süreçlerini (gece batch'leriyle veri taşıma)
-veri mühendisleri Kafka ile **real-time** hale getirir. Klasik senaryo:
+Oracle geçmişinden gelen birinin bildiği **ETL** süreçlerini (gece batch'leriyle veri
+taşıma) veri mühendisleri Kafka ile **real-time** hale getirir. Klasik senaryo:
 
 ```
 1. Müşteri sepete ürün ekler          →  bir "event" üretilir (Producer)
 2. Event 'sepet_hareketleri' topic'ine yazılır
 3. Bir işleme uygulaması topic'i dinler (Consumer: Flink / Spark / Kafka Connect)
 4. Veri anlık işlenir, temizlenir
-5. Analiz için Snowflake/BigQuery'ye, ya da senin bildiğin bir Oracle/PostgreSQL'e yazılır
+5. Analiz için Snowflake/BigQuery'ye, ya da tanıdık bir Oracle/PostgreSQL'e yazılır
 ```
 
 Yani Kafka çoğu zaman "son durak" değil, sistemler arasındaki **gerçek zamanlı taşıma
 katmanıdır**. Kaynaktaki değişikliğin (CDC ile) anında yakalanıp bu boru hattına nasıl
-girdiğini [ilk yazıda](/blog/kafka-cluster-mimarisi/) anlatmıştım.
+girdiği [ilk yazıda](/blog/kafka-cluster-mimarisi/) anlatılmıştı.
 
 ## Özet: Oracle ↔ Kafka
 
-Kafamdaki client-server modelini Kafka'ya çevirirken bana en çok yardımcı olan tablo bu
-oldu:
+Client-server modelini Kafka'ya çevirirken en çok yardımcı olan tablo şu:
 
 | Kriter | Oracle (Client-Server) | Kafka (Dağıtık Event Stream) |
 | --- | --- | --- |
@@ -344,12 +344,12 @@ oldu:
 | **Veri** | Tabloda **duran** (at rest) veri sorgulanır | Sürekli **akan** (in motion) veri anlık yakalanır |
 | **Ölçekleme** | Dikey (daha güçlü makine) ağırlıklı | Yatay — küme'ye broker ekleyerek |
 
-Broker'ı bir cümleyle bağlamak gerekirse: **Kafka'yı devasa bir lojistik firması gibi
-düşün.** Topic'ler kargo hatları, partition'lar kamyonlar, broker'lar ise bu kamyonların
-park ettiği, kargonun tasnif edilip dağıtıldığı **ana depolar**. Depo (broker) sayısını
-ne kadar artırırsan, o kadar çok kargoyu (veriyi) sorunsuz taşırsın. Yeter ki depolardan
-birinin başına iş gelince diğerleri devralabilsin diye kargonun bir kopyası birkaç
-depoda birden dursun — ki bunun adı da **replication**.
+Broker'ı bir cümleyle bağlamak gerekirse: **Kafka, devasa bir lojistik firması gibi
+düşünülebilir.** Topic'ler kargo hatları, partition'lar kamyonlar, broker'lar ise bu
+kamyonların park ettiği, kargonun tasnif edilip dağıtıldığı **ana depolar**. Depo
+(broker) sayısı ne kadar artırılırsa, o kadar çok kargo (veri) sorunsuz taşınır. Yeter ki
+depolardan birinin başına iş gelince diğerleri devralabilsin diye kargonun bir kopyası
+birkaç depoda birden dursun — ki bunun adı da **replication**.
 
 Bu yazıyla serinin en alttaki temel taşını — broker'ın kendisini — yerine oturtmuş
 olduk. Bir sonraki yazıda, bu broker'lara dağıtılmış veriyi consumer tarafında nasıl
