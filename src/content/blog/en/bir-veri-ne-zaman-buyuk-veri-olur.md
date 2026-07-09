@@ -1,8 +1,8 @@
 ---
 title: 'When Does Data Become "Big Data"? Where Do We Draw the Line?'
-description: 'Contrary to popular belief, big data does not mean "unstructured data," "a large company''s data," or "a real-time system." Could you have big data with only structured data? What does "location data" in telecom actually refer to, and what else flows behind it? Where is the line between a small insurer and a giant one? Does real-time require big data? A post that rebuilds the answer from scratch, through the architectural difference that truly separates traditional tools from big data tools.'
+description: 'Contrary to popular belief, big data does not mean "unstructured data," "a large company''s data," or "a real-time system." Could you have big data with only structured data? What is the difference between the data you show off and the data that actually flows? Where is the line between a small insurer and a giant one? Does real-time require big data? A post that rebuilds the answer from scratch, through the architectural difference that truly separates traditional tools from big data tools.'
 pubDate: 2026-07-09
-tags: ['Big Data', 'Distributed Systems', 'Telecom', 'Real-Time', 'Data Engineering', 'Backend']
+tags: ['Big Data', 'Distributed Systems', 'Scaling', 'Real-Time', 'Data Engineering', 'Backend']
 draft: false
 ---
 
@@ -13,13 +13,8 @@ huge institution's is "big." For yet others, anything flowing in **real-time** i
 
 All three are wrong. More precisely, all three touch the edge of big data while missing the
 real line. This post tries to knock down these three misconceptions one by one and rebuild
-what remains — the real line, the moment data actually becomes "big data."
-
-As a starting point, let's use a concrete scene, because it's exactly this kind of scene that
-blurs big data the most: a manager in a telecom meeting who, while talking about big data,
-keeps saying **"location data"** — as if big data consisted of one single thing, position.
-Underneath that sentence hide several misunderstandings about big data. Let's unpack them one
-at a time.
+what remains — the real line, the moment data actually becomes "big data." Let's unpack the
+misconceptions one at a time.
 
 ## Misconception 1: "Big data is unstructured data"
 
@@ -57,70 +52,31 @@ technologies like Hive, Presto, Snowflake, and BigQuery are fundamentally design
 > dizzying speed. Even when Variety is low, the moment Volume and Velocity break traditional
 > methods, we are talking about big data.
 
-## What does "location data" mean in telecom?
+## A single data type can be a whole world on its own
 
-Now back to the manager. When he said "location data," did he really mean physical position?
-Yes — but in the eyes of a telecom manager, "location data" is far more than the simple pin
-on a map; it is a massive big data warehouse in its own right.
+An extension of the first misconception is this: we usually equate big data with **a single
+"flashy" data type.** When big data is discussed at an organization, the source most often
+highlighted is the one easiest to explain to outsiders, the most "impressive" one — as if big
+data consisted of that one thing. Yet there are two separate illusions here.
 
-Even while your phone sits in your pocket with the screen off, it constantly talks to the
-nearest base stations in the background; this is called **signaling data**. In the network of
-an operator with millions of subscribers, information about which base station each subscriber
-connects to within milliseconds, and which one they hand over to, flows continuously.
-Millions of rows per second, billions per day, of raw data (location × timestamp) are
-produced. Processing this is squarely a **Spark / Kafka / Hadoop** job.
+**First:** even that one highlighted type can be a massive big data world on its own. Picture a
+seemingly "simple" signal — the live position of a vehicle fleet, or the clickstream in an
+app. In raw form it is as plain and structured as `[ID, Time, Value]`. But once it flows in
+second by second from millions of sources, even this single "type" turns into layer upon layer
+of analysis — space-time matrices, behavioral profiles, live density maps — and reaches a
+volume a single database cannot hold. So "one type of data" doesn't have to be small; it can
+become a big data warehouse in its own right.
 
-But the real point is turning these raw coordinates into **semantic location data**.
-Latitude-longitude alone means nothing; combined with big data analytics it turns into:
+**Second:** the flashy type shown off to outsiders is usually only the visible tip of the
+iceberg. What truly melts a system's big data infrastructure is the **"machine exhaust"** no
+one proudly presents in slides: application logs, inter-system events, clickstreams, sensor
+telemetry, error records, audit trails. None of these is "cool" on its own; but multiplied by
+millions of users and devices, they form the real data mountain. The data type an organization
+proudly displays is often a small, polished piece of the whole — the real mass of flowing data
+piles up quietly in the background.
 
-- **Mobility matrices:** how many thousands of people move from one district to another
-  between 08:00 and 09:00 in the morning — pure gold for urban planning and public transport.
-- **Home/Work areas:** where a subscriber spends their nights (home) and where they are during
-  business hours (work).
-- **Live footfall:** how many thousands are gathered in a stadium or concert venue right now,
-  and which districts that crowd came from.
-
-That's why location data is not an ordinary log for an operator but a core asset that directly
-generates revenue and runs operations: it decides where to build a new base station
-(**network planning**); with all personal information stripped out (**anonymized**), it is
-sold as a commercial product to municipalities or retail chains ("where should we open the new
-store?"). When the manager said "location data," he didn't simply mean "where is Deniz right
-now?"; he meant that flowing pool — born from millions of people moving over time — that a
-traditional database could never hold.
-
-## But location is only the tip of the iceberg
-
-The manager stressed location because location is the easiest and "coolest" data type to
-explain to outsiders. Yet in an operator's kitchen, what truly melts the big data
-infrastructure lies far beyond location. Roughly three categories:
-
-**1. Network and signaling data.** Every technical contact the phone makes with the network
-produces billions of rows of logs:
-
-- **CDR (Call Detail Records):** who called whom, when, for how long; when an SMS was sent.
-  Content is never stored — only metadata.
-- **IPDR / data consumption:** how much traffic went to which app, how much latency or packet
-  loss occurred on the network.
-- **Device diagnostics:** the device's brand, model, operating system, and the signal quality
-  it currently receives (RSRP/RSRQ). Processed live to determine whether a fault stems from
-  the device or the base station.
-
-**2. Customer interaction and financial data (CRM & Billing).** Operational data that looks
-ordinary on its own but reaches big data scale when multiplied by millions of subscribers:
-text analysis of call center and chatbot logs (NLP to catch complaint trends), billing and
-payment history (the most critical data for **churn** — predicting who will cancel), and the
-digital footprints inside the operator's mobile app.
-
-**3. DPI (Deep Packet Inspection).** The technically heaviest part. The packet headers of the
-internet traffic passing through the network are inspected to derive which services are being
-used. For security, legal obligations, and network optimization, terabytes of DPI data per
-second must flow through big data systems in **real-time**.
-
-There's a saying among telecom people: *"CRM data is what the customer claims; location and
-network data is what actually happens."* Billing, CRM, and package info exist in other
-companies too. But live location and mobility is a mine unique to operators, one that can't be
-imitated. That's probably why the manager highlighted it as the "crown of big data" — but that
-doesn't mean the rest of the vast data ocean isn't there.
+The lesson reinforces the first misconception: what makes data "big" is not what it is (its
+type, its flashiness, whether it's one kind or many) but how much of it flows and how fast.
 
 ## Misconception 2: "Big data is a big company's data"
 
@@ -259,6 +215,6 @@ real-time too.
 The single real criterion that remains: the moment your traditional tools (classic relational
 databases) start buckling under the volume or speed of the data, forcing you to split it and
 distribute it across a cluster of machines — that is exactly when you cross the big data line.
-What that telecom manager meant by "location data," what separates a small insurer from a giant
-one, and what separates a stock ticker from Netflix — it's all the same question: **can a single
-machine still carry this data?**
+What separates a flashy single data type from the machine exhaust behind it, what separates a
+small insurer from a giant one, and what separates a stock ticker from Netflix — it's all the
+same question: **can a single machine still carry this data?**

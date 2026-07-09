@@ -1,8 +1,8 @@
 ---
 title: 'Bir Veri Ne Zaman "Büyük Veri" Olur? Çizgiyi Nerede Çekiyoruz?'
-description: 'Büyük veri sanılanın aksine "unstructured veri", "büyük şirketin verisi" ya da "real-time sistem" demek değildir. Sadece structured data ile büyük veri olur mu? Telekomdaki "lokasyon verisi" neyi kastediyor ve arkasında başka ne akıyor? Küçük bir sigortayla dev sigortayı ayıran çizgi nerede? Real-time için illa büyük veri şart mı? Geleneksel araçlarla büyük veri araçlarını asıl ayıran mimari fark üzerinden baştan kurulan bir yazı.'
+description: 'Büyük veri sanılanın aksine "unstructured veri", "büyük şirketin verisi" ya da "real-time sistem" demek değildir. Sadece structured data ile büyük veri olur mu? Görünen veriyle asıl akan veri arasındaki fark ne? Küçük bir sigortayla dev sigortayı ayıran çizgi nerede? Real-time için illa büyük veri şart mı? Geleneksel araçlarla büyük veri araçlarını asıl ayıran mimari fark üzerinden baştan kurulan bir yazı.'
 pubDate: 2026-07-09
-tags: ['Büyük Veri', 'Dağıtık Sistemler', 'Telekom', 'Real-Time', 'Veri Mühendisliği', 'Backend']
+tags: ['Büyük Veri', 'Dağıtık Sistemler', 'Ölçekleme', 'Real-Time', 'Veri Mühendisliği', 'Backend']
 draft: false
 ---
 
@@ -14,13 +14,7 @@ küçük bir firmanınki "normal", devasa bir kurumunki "büyük" sayılır. Bir
 
 Üçü de yanlış. Daha doğrusu, üçü de büyük verinin kenarına dokunup asıl çizgiyi ıskalar. Bu
 yazı, bu üç yanılgıyı tek tek yıkıp geriye kalan gerçek çizgiyi — bir verinin ne zaman
-"büyük veri" olduğunu — baştan kurmayı deniyor.
-
-Çıkış noktası olarak somut bir sahne kullanalım, çünkü büyük veriyi en çok bu tür sahneler
-bulanıklaştırıyor: bir telekom toplantısında, büyük veriden bahsederken sürekli **"lokasyon
-verisi"** deyip duran bir yönetici. Sanki büyük veri tek bir şeyden, konumdan ibaretmiş gibi.
-Bu cümlenin altında aslında büyük veriyle ilgili birçok yanlış anlaşılma gizli. Onları
-teker teker açalım.
+"büyük veri" olduğunu — baştan kurmayı deniyor. Yanılgıları teker teker açalım.
 
 ## Yanılgı 1: "Büyük veri, unstructured veridir"
 
@@ -58,72 +52,31 @@ veriyi** devasa ölçeklerde hızlı sorgulamak için tasarlanmıştır.
 > gerçeğini değiştirmez. Variety az olsa bile, Volume ve Velocity geleneksel yöntemleri
 > çökerttiği anda büyük veriden söz ederiz.
 
-## Telekomda "lokasyon verisi" neyi kastediyor?
+## Tek bir veri türü bile başlı başına bir dünya olabilir
 
-Şimdi baştaki yöneticiye dönelim. "Lokasyon verisi" derken gerçekten fiziksel konumdan mı
-bahsediyordu? Evet — ama bir telekom yöneticisinin gözünde "lokasyon verisi", haritada
-gördüğümüz basit bir pin noktasından çok daha fazlasıdır; kendi başına devasa bir büyük veri
-ambarıdır.
+Birinci yanılgının bir uzantısı da şu: büyük veriyi genellikle **tek bir "gösterişli" veri
+türüyle** özdeşleştiririz. Bir kurumdan büyük veri diye söz edilirken çoğu zaman dışarıya en
+kolay anlatılan, en "havalı" tek bir kaynak öne çıkarılır — sanki büyük veri o tek şeyden
+ibaretmiş gibi. Oysa iki ayrı yanılsama var burada.
 
-Telefon cebinizde ekranı kapalı dururken bile arka planda sürekli en yakın baz
-istasyonlarıyla konuşur; buna **sinyalleşme verisi (signaling data)** denir. Milyonlarca
-abonesi olan bir operatörün şebekesinde her abonenin milisaniyeler içinde hangi baz
-istasyonuna bağlandığı, hangisine geçtiği (handover) bilgisi akar. Saniyede milyonlarca,
-günde milyarlarca satır ham veri (lokasyon × zaman damgası) üretilir. Bunu işlemek tam
-anlamıyla bir **Spark / Kafka / Hadoop** işidir.
+**Birincisi:** öne çıkarılan o tek tür bile, tek başına devasa bir büyük veri dünyası
+olabilir. Görünüşte "basit" bir sinyal düşünün — bir araç filosunun anlık konum bilgisi ya
+da bir uygulamadaki tıklama akışı. Ham haliyle `[Kimlik, Zaman, Değer]` kadar sade ve
+yapılandırılmıştır. Ama milyonlarca kaynaktan saniye saniye akınca, bu tek "tür" bile
+zaman-mekân matrisleri, davranış profilleri, anlık yoğunluk haritaları gibi katman katman
+analize dönüşür ve tek bir veritabanının kaldıramayacağı bir hacme ulaşır. Yani "tek bir tür
+veri" küçük olmak zorunda değildir; kendi başına bir büyük veri ambarı hâline gelebilir.
 
-Ama esas mesele, bu ham koordinatların **anlamlandırılmış (semantik) lokasyona**
-dönüşmesidir. Tek başına enlem-boylam bir şey ifade etmez; büyük veri analitiğiyle
-birleşince şunlara dönüşür:
+**İkincisi:** dışarıya anlatılan o gösterişli tür, genellikle buzdağının sadece görünen
+yüzüdür. Bir sistemin büyük veri altyapısını asıl eriten şey, kimsenin sunumlarda övünerek
+anlatmadığı o **"makine egzozudur"**: uygulama logları, sistemler arası event'ler, tıklama
+akışları, sensör telemetrisi, hata kayıtları, denetim (audit) izleri. Tek tek bakınca hiçbiri
+"havalı" değildir; ama milyonlarca kullanıcı ve cihazla çarpılınca asıl veri dağını bunlar
+oluşturur. Kurumun gururla gösterdiği veri türü çoğu zaman bütünün küçük, cilalı bir
+parçasıdır — akan verinin asıl kütlesi arka planda, sessizce birikir.
 
-- **Mobilite matrisleri:** Sabah 08.00–09.00 arası bir semtten diğerine kaç bin kişinin
-  taşındığı — şehir planlaması ve toplu taşıma için altın değerinde.
-- **Home/Work alanları:** Abonenin gecelerini geçirdiği yer (ev) ve mesai saatlerinde
-  bulunduğu yer (iş).
-- **Anlık yoğunluk (footfall):** Bir stadyumda ya da konser alanında o an kaç bin kişinin
-  toplandığı ve bu kitlenin hangi ilçelerden geldiği.
-
-Bu yüzden lokasyon verisi operatör için sıradan bir log değil, doğrudan para kazandıran ve
-operasyonu yöneten ana varlıktır: hangi bölgeye yeni baz istasyonu kurulacağına
-(**şebeke planlaması**) bu veri karar verir; kişisel bilgiler tamamen silinip
-(**anonimleştirilerek**) belediyelere ya da zincir marketlere ("yeni şubeyi nereye açalım")
-ticari ürün olarak satılır. Yönetici "lokasyon verisi" derken basitçe "Deniz şu an nerede?"
-demiyordu; milyonlarca insanın zamana bağlı yer değiştirmesinden doğan, geleneksel
-veritabanlarının asla kaldıramayacağı o akan havuzdan bahsediyordu.
-
-## Ama lokasyon buzdağının sadece görünen yüzü
-
-Yönetici lokasyona vurgu yapıyordu, çünkü lokasyon dışarıya en kolay anlatılan, en "havalı"
-veri türü. Oysa bir operatörün mutfağında, büyük veri altyapılarını asıl eriten şey lokasyonun
-çok ötesindedir. Kabaca üç kategori:
-
-**1. Şebeke ve sinyalleşme verileri.** Telefonun ağla kurduğu her teknik temas milyarlarca
-satır log üretir:
-
-- **CDR (Call Detail Records):** Kim, kimi, ne zaman, kaç dakika aradı; ne zaman SMS attı.
-  İçerik asla tutulmaz, sadece meta veri.
-- **IPDR / veri tüketimi:** Hangi uygulamaya ne kadar trafik gitti, ağda ne kadar gecikme
-  (latency) ya da paket kaybı yaşandı.
-- **Cihaz teşhis verisi:** Cihazın markası, modeli, işletim sistemi ve o an aldığı sinyal
-  kalitesi (RSRP/RSRQ). Bir arızanın cihazdan mı yoksa baz istasyonundan mı kaynaklandığını
-  bulmak için anlık işlenir.
-
-**2. Müşteri etkileşim ve finansal verileri (CRM & Billing).** Tek tek bakınca sıradan
-görünüp milyonlarca aboneyle çarpılınca büyük veri ölçeğine ulaşan operasyonel veriler: çağrı
-merkezi ve chatbot loglarının metin analizi (şikayet trendlerini yakalamak için NLP), fatura
-ve ödeme geçmişi (**churn** — abonelikten çıkma tahmini için en kritik veri) ve operatörün
-mobil uygulamasındaki dijital ayak izleri.
-
-**3. DPI (Deep Packet Inspection).** İşin teknik olarak en ağır kısmı. Şebekeden geçen
-internet trafiğinin paket başlıkları incelenerek hangi servislerin kullanıldığı çıkarılır.
-Güvenlik, yasal zorunluluklar ve şebeke optimizasyonu için saniyede terabaytlarca DPI verisi
-**gerçek zamanlı** olarak büyük veri sistemlerinden geçmek zorundadır.
-
-Telekomcular arasında bir laf vardır: *"CRM verisi müşterinin beyanıdır; lokasyon ve şebeke
-verisi ise hayatın gerçeğidir."* Fatura, CRM, paket bilgisi zaten başka şirketlerde de var.
-Ama anlık lokasyon ve mobilite sadece operatörlere özel, taklit edilemez bir madendir.
-Yönetici muhtemelen bu yüzden onu "büyük verinin tacı" olarak öne çıkarıyordu — ama bu, geri
-kalan devasa veri deryasının olmadığı anlamına gelmez.
+Buradan çıkan ders, birinci yanılgıyı pekiştirir: bir veriyi "büyük" yapan onun ne olduğu
+(tipi, gösterişi, tek mi çok mu tür olduğu) değil; ne kadar ve ne hızla aktığıdır.
 
 ## Yanılgı 2: "Büyük veri, büyük şirketin verisidir"
 
@@ -259,6 +212,6 @@ eşanlamlı değil** — küçük veri de real-time akabilir.
 Geriye kalan tek gerçek ölçüt şu: elinizdeki geleneksel araçlar (klasik ilişkisel
 veritabanları) verinin hacmi ya da hızı altında ezilmeye başladığı, sizi veriyi parçalayıp
 bir makine kümesine dağıtmaya mecbur bıraktığı an — işte tam o an büyük veri çizgisini
-geçmişsinizdir. Telekomdaki o yöneticinin "lokasyon verisi" derken kastettiği de, küçük bir
-sigortayla dev sigortayı ayıran da, bir borsa ekranını Netflix'ten ayıran da hep aynı soru:
-**bu veriyi tek bir makine hâlâ taşıyabiliyor mu?**
+geçmişsinizdir. Gösterişli tek bir veri türünü arka plandaki makine egzozundan ayıran da,
+küçük bir sigortayla dev sigortayı ayıran da, bir borsa ekranını Netflix'ten ayıran da hep
+aynı soru: **bu veriyi tek bir makine hâlâ taşıyabiliyor mu?**
