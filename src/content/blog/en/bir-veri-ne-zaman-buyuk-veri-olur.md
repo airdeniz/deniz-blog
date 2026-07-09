@@ -1,6 +1,6 @@
 ---
 title: 'When Does Data Become "Big Data"? Where Do We Draw the Line?'
-description: 'Contrary to popular belief, big data does not mean "unstructured data," "a large company''s data," or "a real-time system." Could you have big data with only structured data? What is the difference between the data you show off and the data that actually flows? Where is the line between a small insurer and a giant one? Does real-time require big data? A post that rebuilds the answer from scratch, through the architectural difference that truly separates traditional tools from big data tools.'
+description: 'Contrary to popular belief, big data does not mean "unstructured data," "a large company''s data," or "a real-time system." Could you have big data with only structured data? What is the difference between the data you show off and the data that actually flows? Does real-time require big data? A post that rebuilds the answer from scratch, through the architectural difference that truly separates traditional tools from big data tools.'
 pubDate: 2026-07-09
 tags: ['Big Data', 'Distributed Systems', 'Scaling', 'Real-Time', 'Data Engineering', 'Backend']
 draft: false

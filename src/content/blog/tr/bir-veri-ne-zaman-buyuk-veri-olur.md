@@ -1,6 +1,6 @@
 ---
 title: 'Bir Veri Ne Zaman "Büyük Veri" Olur? Çizgiyi Nerede Çekiyoruz?'
-description: 'Büyük veri sanılanın aksine "unstructured veri", "büyük şirketin verisi" ya da "real-time sistem" demek değildir. Sadece structured data ile büyük veri olur mu? Görünen veriyle asıl akan veri arasındaki fark ne? Küçük bir sigortayla dev sigortayı ayıran çizgi nerede? Real-time için illa büyük veri şart mı? Geleneksel araçlarla büyük veri araçlarını asıl ayıran mimari fark üzerinden baştan kurulan bir yazı.'
+description: 'Büyük veri sanılanın aksine "unstructured veri", "büyük şirketin verisi" ya da "real-time sistem" demek değildir. Sadece structured data ile büyük veri olur mu? Görünen veriyle asıl akan veri arasındaki fark ne? Real-time için illa büyük veri şart mı? Geleneksel araçlarla büyük veri araçlarını asıl ayıran mimari fark üzerinden baştan kurulan bir yazı.'
 pubDate: 2026-07-09
 tags: ['Büyük Veri', 'Dağıtık Sistemler', 'Ölçekleme', 'Real-Time', 'Veri Mühendisliği', 'Backend']
 draft: false
