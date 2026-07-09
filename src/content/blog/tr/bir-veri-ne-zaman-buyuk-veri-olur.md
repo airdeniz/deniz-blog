@@ -27,11 +27,12 @@ olmasını engellemez. Büyük veriyi tanımlarken bakılan şey verinin **tipi*
 başına yapılandırılmış veriyle sınırlı kalsa bile, diğer iki unsur büyük veri yaratmaya
 fazlasıyla yeter.
 
-**Volume (Hacim).** Yapılandırılmış bir veritabanının boyutu terabaytları aşıp petabaytlara
-ulaştığında o veri büyüktür. Küresel bir bankanın tüm kredi kartı işlem geçmişi ya da bir
+**Volume (Hacim).** Yapılandırılmış bir veritabanı, tek bir sunucunun rahatça taşıyamayacağı
+bir boyuta ulaştığında o veri büyüktür — bu bazen petabaytlar, bazen sadece terabaytlar
+demektir; kesin bir eşik yoktur. Küresel bir bankanın tüm kredi kartı işlem geçmişi ya da bir
 havayolunun anlık rezervasyon ve uçuş verisi — hepsi ilişkisel veritabanlarında (RDBMS)
-tertemiz SQL formatında durur. Ama boyut bu ölçeğe varınca geleneksel tek sunucu bu veriyi
-kaldıramaz hale gelir. İşte yapılandırılmış büyük veri tam burada başlar.
+tertemiz SQL formatında durur. Ama boyut tek makinenin sınırını aşınca geleneksel sunucu bu
+veriyi kaldıramaz hale gelir. İşte yapılandırılmış büyük veri tam burada başlar.
 
 **Velocity (Hız).** Veri çok yüksek bir hızla akıp milisaniyeler içinde işlenmek zorunda
 kalınca, yapısı ne kadar net olursa olsun bir büyük veri problemi doğar. IoT cihazlarından,
