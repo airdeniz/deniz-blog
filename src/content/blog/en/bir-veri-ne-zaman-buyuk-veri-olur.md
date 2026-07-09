@@ -27,11 +27,11 @@ When defining big data, what matters is not the **type** of data but the famous 
 Volume, Velocity, and Variety. Even if Variety alone is limited to structured data, the other
 two are more than enough to create big data.
 
-**Volume.** When the number of rows in a structured database reaches the quadrillions, that
+**Volume.** When the size of a structured database grows past terabytes into petabytes, that
 data is big. A global bank's entire credit card transaction history, or an airline's live
 booking and flight data — all of it sits in relational databases (RDBMS) in clean SQL format.
-But once the size hits petabytes, a traditional single server can no longer handle it. This
-is exactly where structured big data begins.
+But once the size reaches that scale, a traditional single server can no longer handle it.
+This is exactly where structured big data begins.
 
 **Velocity.** When data flows at very high speed and must be processed within milliseconds, a
 big data problem arises no matter how clean its structure is. Telemetry flowing from IoT
