@@ -205,6 +205,35 @@ A single e-commerce scenario makes this distinction concrete:
   is exactly where **Kafka** (to collect the logs) and **Spark** (to process them live) step
   in.
 
+## But does big data necessarily mean more than one computer?
+
+So far we've drawn the line through "the single machine's limit." But an important refinement
+is needed here: **for something to be big data, it does not have to be processed by more than
+one computer (a distributed system / cluster).** Big data is a **characteristic of the data
+itself**; distributed systems are merely **one of the solutions** used to process that data.
+The two are constantly confused.
+
+So why were they always written side by side in history? In the early 2000s, a single
+computer's CPU and RAM capacity was both limited and very expensive. When the data world
+suddenly exploded, companies couldn't fit that massive load onto a single machine — they hit
+the **scale-up wall**. At exactly that point Google, with its **MapReduce** paper, and then
+**Hadoop**, told the world: *"Don't try to buy one giant computer; combine 500 ordinary ones
+and run them as a single machine"* (**scale-out**). That's why big data and distributed
+systems went down in history hand in hand.
+
+But today's hardware is in a very different place from that Hadoop era. A single server (single
+node) can now hold terabytes of RAM, hundreds of CPU cores, and NVMe SSDs that read gigabytes
+per second. This means many problems that used to be solved by standing up a 50-machine Hadoop
+cluster and calling it "big data" can today be processed on a single powerful cloud server —
+with in-memory databases or modern, optimized execution engines — and without network latency,
+far faster.
+
+So "the single machine limit" is not a fixed wall but **a line that keeps moving with the
+hardware.** And more importantly: even if data fits into one machine's memory and can be
+processed there, if it is still incredibly complex, fast, and unstructured, it is **still big
+data.** Tools serve the goal; what dictates the architecture is the necessity the data imposes
+— a distributed system is the best-known answer to that necessity, not its definition.
+
 ## Summary: the line is not a threshold, it's a break
 
 There were three misconceptions at the start; all three fell. Big data **doesn't have to be
@@ -214,8 +243,9 @@ of the data. And big data **isn't synonymous with real-time** — small data can
 real-time too.
 
 The single real criterion that remains: the moment your traditional tools (classic relational
-databases) start buckling under the volume or speed of the data, forcing you to split it and
-distribute it across a cluster of machines — that is exactly when you cross the big data line.
+databases) start buckling under the volume, speed, or complexity of the data, forcing you to
+move to other tools — whether a distributed cluster or a single but enormous node — that is
+exactly when you cross the big data line.
 What separates a flashy single data type from the machine exhaust behind it, what separates a
 small company from a giant one, and what separates a stock ticker from Netflix — it's all the
 same question: **can a single machine still carry this data?**
