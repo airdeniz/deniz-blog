@@ -214,5 +214,5 @@ Geriye kalan tek gerçek ölçüt şu: elinizdeki geleneksel araçlar (klasik il
 veritabanları) verinin hacmi ya da hızı altında ezilmeye başladığı, sizi veriyi parçalayıp
 bir makine kümesine dağıtmaya mecbur bıraktığı an — işte tam o an büyük veri çizgisini
 geçmişsinizdir. Gösterişli tek bir veri türünü arka plandaki makine egzozundan ayıran da,
-küçük bir sigortayla dev sigortayı ayıran da, bir borsa ekranını Netflix'ten ayıran da hep
+küçük bir şirketle dev bir şirketi ayıran da, bir borsa ekranını Netflix'ten ayıran da hep
 aynı soru: **bu veriyi tek bir makine hâlâ taşıyabiliyor mu?**

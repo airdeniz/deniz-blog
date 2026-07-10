@@ -217,5 +217,5 @@ The single real criterion that remains: the moment your traditional tools (class
 databases) start buckling under the volume or speed of the data, forcing you to split it and
 distribute it across a cluster of machines — that is exactly when you cross the big data line.
 What separates a flashy single data type from the machine exhaust behind it, what separates a
-small insurer from a giant one, and what separates a stock ticker from Netflix — it's all the
+small company from a giant one, and what separates a stock ticker from Netflix — it's all the
 same question: **can a single machine still carry this data?**
