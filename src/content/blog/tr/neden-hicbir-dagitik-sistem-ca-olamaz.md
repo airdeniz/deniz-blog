@@ -1,6 +1,6 @@
 ---
 title: 'Neden Hiçbir Dağıtık Sistem "CA" Olamaz? Borsa, Instagram ve LoL Üzerinden CAP''ten PACELC''e'
-description: 'Canlı borsa verisi büyük veri midir ve binlerce sunucu aynı fiyatta nasıl anlaşır? Ağ bölünmesinde borsa neden CP seçer? "Sorun yokken sistem CA değil mi?" sorusunun cevabı neden PACELC? Işık hızı yüzünden saf bir CA neden fiziksel olarak imkânsız? Borsa, Instagram ve online oyunlar aynı fizik yasası altında tutarlılıkla gecikme arasında nasıl farklı seçimler yapıyor, ve borsa neden quorum''la bile yetinmiyor? CAP''ten PACELC''e, örneklerle baştan kurulan bir yazı.'
+description: 'Canlı borsa verisi büyük veri midir ve binlerce sunucu aynı fiyatta nasıl anlaşır? Ağ bölünmesinde borsa neden CP seçer? "Sorun yokken sistem CA değil mi?" sorusunun cevabı neden PACELC? Işık hızı yüzünden saf bir CA neden fiziksel olarak imkânsız? Borsa, Instagram ve online oyunlar aynı fizik yasası altında tutarlılıkla gecikme arasında nasıl farklı seçimler yapıyor, ve borsa neden quorum''la bile yetinmiyor? CAP''ten PACELC''e, örneklerle anlatan bir yazı.'
 pubDate: 2026-07-11
 tags: ['Dağıtık Sistemler', 'CAP Teoremi', 'PACELC', 'Tutarlılık', 'Consensus', 'Backend']
 draft: false
