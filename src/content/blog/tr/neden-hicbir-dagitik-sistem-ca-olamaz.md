@@ -6,7 +6,7 @@ tags: ['Dağıtık Sistemler', 'CAP Teoremi', 'PACELC', 'Tutarlılık', 'Consens
 draft: false
 ---
 
-Bir ekranda hisse fiyatının saniyeden küçük aralıklarla titreyip durduğunu düşünün. Arkada,
+Bir ekranda hisse fiyatının saniyeden küçük aralıklarla değişip durduğunu düşünün. Arkada,
 dünyanın dört bir yanındaki borsalarda salisede binlerce emir eşleşiyor, fiyat kesintisiz
 akıyor. İnsanın ilk aklına gelen soru "bu kadar veri büyük veri mi?" oluyor. Ama o soruyu
 geçtiğiniz an, çok daha ilginç bir mühendislik draması başlıyor: **binlerce sunucu, aynı
