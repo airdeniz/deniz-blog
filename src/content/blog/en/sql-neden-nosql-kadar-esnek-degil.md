@@ -49,9 +49,8 @@ SQL (every row, same schema)        NoSQL / Document (each doc, its own schema)
 +------+---------+----------+
 ```
 
-While the `Phone` document has a `warranty` field, the `Apple` document in the same collection
-doesn't carry that field at all — it doesn't even need to be defined. Each piece of data
-determines its own structure. This is the flexibility that's called "schemaless."
+Each document determines its own structure; a field that isn't there simply doesn't exist for that
+document — it doesn't even need to be defined. This is the flexibility that's called "schemaless."
 
 ## 2. Adding a column in production is not a "one-line job"
 
@@ -192,14 +191,14 @@ don't need to be stored forever. Redis keeps data in **RAM** (in-memory) rather 
 handles hundreds of thousands of reads/writes per second at microsecond latency. When a product is
 added to the cart, the data is written straight to Redis. The moment the "complete order" button is
 pressed, the cart is read from Redis, validated, and transferred to PostgreSQL for **durable/safe**
-storage. The job here wants **speed.**
+storage. This drawer's priority isn't consistency but raw **speed.**
 
 ### Search and filtering → NoSQL / Search engine (Elasticsearch)
 
 When "blue running shoes" is typed into the search box, running a `LIKE '%blue%'` search over
 billions of rows brings SQL to its knees — the query takes seconds and locks the system. A search
 engine like Elasticsearch, on the other hand, **indexes** the words ahead of time; tolerating
-typos, it returns the most relevant results within milliseconds. The job here wants **search
+typos, it returns the most relevant results within milliseconds. What's decisive here is **search
 performance.**
 
 ## How do these databases talk to each other?
@@ -225,11 +224,10 @@ others; they work like a loosely-coupled orchestra over events.
 
 ## Summary: flexibility isn't a shortfall but an axis
 
-Adding a column with `ALTER TABLE` is flexibility at the micro level; nobody denies that. But at
-the architectural level, "flexibility" is something else entirely: instant adaptation to variable
-data types, the ability to change across billions of rows without downtime, and scaling out
-without limit. SQL manages these with strict rules and a safety priority (ACID), which is why it's
-called "not flexible" — but that very rigidity is what keeps the data always consistent and safe.
+Adding a column with `ALTER TABLE` is flexibility too, but at the micro level. The architectural
+flexibility meant by "SQL isn't flexible" lives on a different axis — and SQL deliberately
+constrains it for the sake of keeping data always consistent and safe. What we call its "lack of
+flexibility" is really that safety trade-off itself.
 
 So the right reading isn't "SQL weak, NoSQL strong." The two are **two ends of one axis:** rigid
 consistency and safety at one end, flexibility and scale at the other. And large real-world systems

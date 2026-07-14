@@ -50,9 +50,8 @@ SQL (her satır aynı şema)          NoSQL / Document (her doküman kendi şema
 +------+---------+----------+
 ```
 
-`Telefon` dokümanında `garanti` alanı varken, aynı koleksiyondaki `Elma` dokümanında bu alan hiç
-yer kaplamaz — tanımlanmasına bile gerek yoktur. Her veri kendi yapısını kendisi belirler. İşte
-"şemasız" (schemaless) denen esneklik budur.
+Her doküman kendi yapısını kendisi belirler; bir dokümanda olmayan alan, onun için hiç var olmaz —
+tanımlanmasına bile gerek yoktur. İşte "şemasız" (schemaless) denen esneklik budur.
 
 ## 2. Canlıda kolon eklemek "bir satırlık iş" değildir
 
@@ -191,15 +190,15 @@ Kullanıcının sepetindeki ürünler ve oturum (session) bilgisi **çok hızlı
 ömür boyu saklanması gerekmez. Redis veriyi diskte değil **RAM'de** (in-memory) tutar; bu yüzden
 saniyede yüz binlerce okuma/yazmayı mikrosaniyeler düzeyinde yapar. Sepete ürün eklendiğinde veri
 doğrudan Redis'e yazılır. "Siparişi tamamla" butonuna basıldığı an sepet Redis'ten okunur,
-doğrulanır ve **kalıcı/güvenli** saklanmak üzere PostgreSQL'e aktarılır. Buradaki iş **hız**
-istiyor.
+doğrulanır ve **kalıcı/güvenli** saklanmak üzere PostgreSQL'e aktarılır. Bu çekmecenin önceliği
+tutarlılık değil, saf **hız**.
 
 ### Arama ve filtreleme → NoSQL / Arama motoru (Elasticsearch)
 
 Arama kutusuna "mavi spor ayakkabı" yazıldığında, milyarlarca satırda `LIKE '%mavi%'` araması
 yapmak SQL'i dize getirir — sorgu saniyeler sürer, sistemi kilitler. Elasticsearch gibi bir arama
 motoru ise kelimeleri önceden **indeksler**; yazım hatalarını tolere ederek en uygun sonuçları
-milisaniyeler içinde döndürür. Buradaki iş **arama performansı** istiyor.
+milisaniyeler içinde döndürür. Burada belirleyici olan **arama performansı**.
 
 ## Bu veritabanları birbiriyle nasıl konuşur?
 
@@ -222,11 +221,10 @@ Böylece her veritabanı, kendi güçlü olduğu işi yaparken diğerlerinden ko
 
 ## Özet: esneklik bir eksik değil, bir eksen
 
-`ALTER TABLE` ile kolon eklemek mikro düzeyde bir esnekliktir; kimse bunu inkâr etmiyor. Ama
-mimari düzeyde "esneklik" bambaşka bir şeydir: değişken veri tiplerine anında uyum, milyarlarca
-satırda kesinti yaratmadan değişebilme ve sınırsızca yatay genişleme. SQL bunları katı kurallarla
-ve güvenlik önceliğiyle (ACID) yönettiği için "esnek değil" denir — ama tam bu katılık, verinin
-her zaman tutarlı ve güvenli kalmasını sağlar.
+`ALTER TABLE` ile kolon eklemek de bir esnekliktir, ama mikro düzeyde. "SQL esnek değil" derken
+kastedilen mimari esneklik ise başka bir eksende yaşar — ve SQL onu, verinin her zaman tutarlı ve
+güvenli kalması uğruna bilerek kısıtlar. "Esnek olmama" dediğimiz şey, aslında bu güvenlik
+tercihinin ta kendisidir.
 
 Dolayısıyla doğru okuma "SQL zayıf, NoSQL güçlü" değildir. İkisi bir **eksenin iki ucudur:** bir
 uçta katı tutarlılık ve güvenlik, diğer uçta esneklik ve ölçek. Ve gerçek dünyadaki büyük
