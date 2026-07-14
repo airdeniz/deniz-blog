@@ -13,7 +13,8 @@ ALTER TABLE products ADD COLUMN warranty_months INT;
 ```
 
 The command finishes in seconds. That's exactly why "SQL isn't as flexible as NoSQL" sounds unfair
-the first time you hear it: if adding a new field is this easy, what's inflexible about it?
+the first time you hear it: if adding a new field, dropping a column, or adding an index to one is
+this easy, what's inflexible about it?
 
 The point to catch is this: the word "flexibility" here means two completely different things.
 Running a single `ALTER TABLE` in DBeaver is flexibility at the **micro level.** Flexibility at the

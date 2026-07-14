@@ -13,7 +13,8 @@ ALTER TABLE urunler ADD COLUMN garanti_suresi INT;
 ```
 
 Komut saniyeler içinde biter. Tam da bu yüzden "SQL, NoSQL'e kıyasla esnek değildir" cümlesi ilk
-duyulduğunda kulağa haksız gelir: madem yeni bir alan eklemek bu kadar kolay, nesi esnek değil?
+duyulduğunda kulağa haksız gelir: madem yeni bir alan eklemek, bir kolonu silmek ya da bir kolona
+index eklemek bu kadar kolay, nesi esnek değil?
 
 Yakalanması gereken nokta şu: "esneklik" kelimesi burada iki bambaşka şeyi kastediyor. DBeaver'da
 tek bir `ALTER TABLE` çalıştırmak **mikro düzeyde** bir esnekliktir. Mimari düzeyde "esneklik" ise
