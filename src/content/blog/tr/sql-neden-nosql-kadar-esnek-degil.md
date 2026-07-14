@@ -1,6 +1,6 @@
 ---
 title: 'SQL Neden NoSQL Kadar "Esnek" Değil — ve İkisi Aynı Projede Nasıl Bir Arada Çalışır?'
-description: 'Bir tabloya kolon eklemek çoğu zaman tek satırlık bir iştir; tam da bu yüzden "SQL esnek değildir" cümlesi ilk bakışta haksız gelir: ALTER TABLE ile saniyeler içinde kolon ekleniyorsa nesi esnek değil? Oysa "esneklik" burada iki ayrı şeyi kastediyor — DBeaver''da bir kolon eklemek gibi mikro esneklik ile milyarlarca satırı kesinti yaratmadan değiştirebilme, değişken veri tiplerine anında uyum ve sınırsız yatay ölçekleme gibi mimari esneklik. Bu yazı SQL''in neden "katı şemalı" sayıldığını dört başlıkta kuruyor, katılığın aslında bir güvenlik tercihi olduğunu gösteriyor ve gerçek dünyada seçimin "SQL mi NoSQL mi" değil, ikisini bir arada kullanmak (polyglot persistence) olduğunu somut bir e-ticaret senaryosuyla anlatıyor.'
+description: 'ALTER TABLE ile saniyeler içinde kolon ekleniyorsa SQL neden "esnek değil" sayılır? Çünkü "esneklik" iki ayrı şeydir: bir kolon eklemek gibi mikro esneklik ile milyarlarca satırı kesintisiz değiştirme, esnek şema ve yatay ölçekleme gibi mimari esneklik. Katılığın neden bir güvenlik tercihi olduğunu ve gerçek dünyanın cevabının ikisini bir arada kullanmak (polyglot persistence) olduğunu anlatan bir yazı.'
 pubDate: 2026-07-14
 tags: ['SQL', 'NoSQL', 'Veritabanı', 'Polyglot Persistence', 'Ölçekleme', 'Backend']
 draft: false
