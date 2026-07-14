@@ -138,7 +138,7 @@ farklıdır. Bu yüzden mimarlar veriyi farklı çekmecelere böler:
 
 ```
                   +-----------------------------------+
-                  |         KULLANICI / İSTEMCİ       |
+                  |        KULLANICI / İSTEMCİ        |
                   +-----------------------------------+
                                     |
                                     v
