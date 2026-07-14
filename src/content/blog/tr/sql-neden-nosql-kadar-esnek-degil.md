@@ -228,7 +228,7 @@ tercihinin ta kendisidir.
 
 Dolayısıyla doğru okuma "SQL zayıf, NoSQL güçlü" değildir. İkisi bir **eksenin iki ucudur:** bir
 uçta katı tutarlılık ve güvenlik, diğer uçta esneklik ve ölçek. Ve gerçek dünyadaki büyük
-sistemler bu uçlardan birini seçmez; **her işi kendi ucuna** yerleştirir. Para PostgreSQL'de
-durur, katalog MongoDB'de, sepet Redis'te, arama Elasticsearch'te — hepsi Kafka üzerinden
-konuşur. Modern bir mimaride tek bir kahraman yoktur: **SQL güvenliği sağlar, NoSQL esnekliği ve
+sistemler bu uçlardan birini seçmez; **her işi kendi ucuna** yerleştirir. Sipariş ve ödeme
+PostgreSQL'de durur, katalog MongoDB'de, sepet Redis'te, arama Elasticsearch'te — hepsi Kafka
+üzerinden konuşur. Modern bir mimaride tek bir kahraman yoktur: **SQL güvenliği sağlar, NoSQL esnekliği ve
 hızı taşır.**

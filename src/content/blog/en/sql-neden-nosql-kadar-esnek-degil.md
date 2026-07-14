@@ -231,7 +231,7 @@ flexibility" is really that safety trade-off itself.
 
 So the right reading isn't "SQL weak, NoSQL strong." The two are **two ends of one axis:** rigid
 consistency and safety at one end, flexibility and scale at the other. And large real-world systems
-don't pick one of these ends; they place **each job at its own end.** The money lives in
+don't pick one of these ends; they place **each job at its own end.** Orders and payments live in
 PostgreSQL, the catalog in MongoDB, the cart in Redis, search in Elasticsearch — and they all talk
 over Kafka. In a modern architecture there's no single hero: **SQL provides safety, NoSQL carries
 flexibility and speed.**
