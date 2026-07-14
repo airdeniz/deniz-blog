@@ -136,7 +136,7 @@ Bunu somutlaştırmak için dev bir e-ticaret platformu (Trendyol, Hepsiburada t
 bakalım. Böyle bir sistemde her verinin karakteri — ihtiyaç duyduğu güvenlik ve hız seviyesi —
 farklıdır. Bu yüzden mimarlar veriyi farklı çekmecelere böler:
 
-```
+<pre style="width:max-content;max-width:100%;margin-inline:auto">
                   +-----------------------------------+
                   |        KULLANICI / İSTEMCİ        |
                   +-----------------------------------+
@@ -159,7 +159,7 @@ farklıdır. Bu yüzden mimarlar veriyi farklı çekmecelere böler:
 |    POSTGRESQL    |       |     MONGODB      |       |      REDIS       |
 |   (SQL / ACID)   |       | (NoSQL/Document) |       | (NoSQL/In-Mem)   |
 +------------------+       +------------------+       +------------------+
-```
+</pre>
 
 ### Sipariş, ödeme, finans → SQL (PostgreSQL)
 

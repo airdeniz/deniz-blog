@@ -135,7 +135,7 @@ To make this concrete, let's look at the scenario of a large e-commerce platform
 each piece of data has a different character — a different level of safety and speed it needs. So
 architects split the data into different drawers:
 
-```
+<pre style="width:max-content;max-width:100%;margin-inline:auto">
                   +-----------------------------------+
                   |           USER / CLIENT           |
                   +-----------------------------------+
@@ -158,7 +158,7 @@ architects split the data into different drawers:
 |    POSTGRESQL    |       |     MONGODB      |       |      REDIS       |
 |   (SQL / ACID)   |       | (NoSQL/Document) |       | (NoSQL/In-Mem)   |
 +------------------+       +------------------+       +------------------+
-```
+</pre>
 
 ### Orders, payments, finance → SQL (PostgreSQL)
 
