@@ -1,19 +1,21 @@
 ---
 title: 'SQL Neden NoSQL Kadar "Esnek" Değil — ve İkisi Aynı Projede Nasıl Bir Arada Çalışır?'
-description: 'Yıllarca SQL yazmış biri "SQL esnek değildir" cümlesini duyunca haklı olarak itiraz eder: ALTER TABLE ile saniyeler içinde kolon ekleyebiliyorsam nesi esnek değil? İtiraz yerinde, ama "esneklik" burada iki ayrı şeyi kastediyor — DBeaver''da bir kolon eklemek gibi mikro esneklik ile milyarlarca satırı kesinti yaratmadan değiştirebilme, değişken veri tiplerine anında uyum ve sınırsız yatay ölçekleme gibi mimari esneklik. Bu yazı SQL''in neden "katı şemalı" sayıldığını dört başlıkta kuruyor, katılığın aslında bir güvenlik tercihi olduğunu gösteriyor ve gerçek dünyada seçimin "SQL mi NoSQL mi" değil, ikisini bir arada kullanmak (polyglot persistence) olduğunu somut bir e-ticaret senaryosuyla anlatıyor.'
+description: 'Bir tabloya kolon eklemek çoğu zaman tek satırlık bir iştir; tam da bu yüzden "SQL esnek değildir" cümlesi ilk bakışta haksız gelir: ALTER TABLE ile saniyeler içinde kolon ekleniyorsa nesi esnek değil? Oysa "esneklik" burada iki ayrı şeyi kastediyor — DBeaver''da bir kolon eklemek gibi mikro esneklik ile milyarlarca satırı kesinti yaratmadan değiştirebilme, değişken veri tiplerine anında uyum ve sınırsız yatay ölçekleme gibi mimari esneklik. Bu yazı SQL''in neden "katı şemalı" sayıldığını dört başlıkta kuruyor, katılığın aslında bir güvenlik tercihi olduğunu gösteriyor ve gerçek dünyada seçimin "SQL mi NoSQL mi" değil, ikisini bir arada kullanmak (polyglot persistence) olduğunu somut bir e-ticaret senaryosuyla anlatıyor.'
 pubDate: 2026-07-14
 tags: ['SQL', 'NoSQL', 'Veritabanı', 'Polyglot Persistence', 'Ölçekleme', 'Backend']
 draft: false
 ---
 
-Yıllarca Oracle ya da PostgreSQL'de SQL yazmış biri, "SQL, NoSQL'e kıyasla esnek değildir"
-cümlesini ilk duyduğunda haklı olarak itiraz eder:
+Bir tabloya kolon eklemek çoğu zaman tek satırlık bir iştir:
 
-> "`ALTER TABLE urunler ADD COLUMN garanti_suresi INT` yazıp saniyeler içinde yeni bir kolon
-> ekleyebiliyorum. Bir geliştirme gerekirse tabloyu genişletmek bir satırlık iş. Nesi esnek
-> değil?"
+```sql
+ALTER TABLE urunler ADD COLUMN garanti_suresi INT;
+```
 
-İtiraz tamamen yerinde — ama "esneklik" kelimesi burada iki bambaşka şeyi kastediyor. DBeaver'da
+Komut saniyeler içinde biter. Tam da bu yüzden "SQL, NoSQL'e kıyasla esnek değildir" cümlesi ilk
+duyulduğunda kulağa haksız gelir: madem yeni bir alan eklemek bu kadar kolay, nesi esnek değil?
+
+Yakalanması gereken nokta şu: "esneklik" kelimesi burada iki bambaşka şeyi kastediyor. DBeaver'da
 tek bir `ALTER TABLE` çalıştırmak **mikro düzeyde** bir esnekliktir. Mimari düzeyde "esneklik" ise
 çok daha başka bir şeyi: veritabanının **değişken veri tiplerine anında uyum sağlaması**,
 **milyarlarca satırı kesinti yaratmadan** değiştirebilmesi ve **sınırsızca yatay

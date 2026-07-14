@@ -1,23 +1,25 @@
 ---
 title: 'Why Isn''t SQL as "Flexible" as NoSQL — and How Do the Two Live Together in One Project?'
-description: 'Someone who has written SQL for years rightly objects when they hear "SQL isn''t flexible": if I can add a column in seconds with ALTER TABLE, what''s inflexible about it? The objection is fair, but "flexibility" here means two different things — the micro-flexibility of adding a column in DBeaver, versus the architectural flexibility of changing billions of rows without downtime, adapting instantly to variable data types, and scaling out without limit. This post builds up why SQL is called "rigid-schema" in four points, shows that the rigidity is actually a safety trade-off rather than a flaw, and explains that the real-world choice is not "SQL or NoSQL" but using both together (polyglot persistence) through a concrete e-commerce scenario.'
+description: 'Adding a column to a table is usually a one-line job; that''s exactly why "SQL isn''t flexible" sounds unfair at first: if a column goes in within seconds via ALTER TABLE, what''s inflexible about it? Yet "flexibility" here means two different things — the micro-flexibility of adding a column in DBeaver, versus the architectural flexibility of changing billions of rows without downtime, adapting instantly to variable data types, and scaling out without limit. This post builds up why SQL is called "rigid-schema" in four points, shows that the rigidity is actually a safety trade-off rather than a flaw, and explains that the real-world choice is not "SQL or NoSQL" but using both together (polyglot persistence) through a concrete e-commerce scenario.'
 pubDate: 2026-07-14
 tags: ['SQL', 'NoSQL', 'Database', 'Polyglot Persistence', 'Scaling', 'Backend']
 draft: false
 ---
 
-Someone who has written SQL in Oracle or PostgreSQL for years rightly objects the first time they
-hear "SQL isn't as flexible as NoSQL":
+Adding a column to a table is usually a one-line job:
 
-> "I can write `ALTER TABLE products ADD COLUMN warranty_months INT` and add a new column in
-> seconds. If a change is needed, extending the table is a one-line job. What's inflexible about
-> that?"
+```sql
+ALTER TABLE products ADD COLUMN warranty_months INT;
+```
 
-The objection is entirely fair — but the word "flexibility" here means two completely different
-things. Running a single `ALTER TABLE` in DBeaver is flexibility at the **micro level.**
-Flexibility at the **architectural** level means something else entirely: the database
-**adapting instantly to variable data types**, being able to change **billions of rows without
-downtime**, and **scaling out without limit.**
+The command finishes in seconds. That's exactly why "SQL isn't as flexible as NoSQL" sounds unfair
+the first time you hear it: if adding a new field is this easy, what's inflexible about it?
+
+The point to catch is this: the word "flexibility" here means two completely different things.
+Running a single `ALTER TABLE` in DBeaver is flexibility at the **micro level.** Flexibility at the
+**architectural** level means something else entirely: the database **adapting instantly to
+variable data types**, being able to change **billions of rows without downtime**, and **scaling
+out without limit.**
 
 This post builds up why SQL is considered "rigid-schema" in four points, then shows that this
 rigidity is not a flaw but a **safety trade-off** — and finally explains, through a concrete
