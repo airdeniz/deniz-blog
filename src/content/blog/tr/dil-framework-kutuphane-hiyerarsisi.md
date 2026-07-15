@@ -215,7 +215,7 @@ Fark **indirdikten sonra** başlar:
 - **Framework** ise *demonte gelen büyük bir mobilyadır*: `pip install django` dersin ama hemen kod
   yazamazsın; önce `django-admin startproject` ile onu **kurman (monte etmen)** gerekir.
 
-## 6. Ne zaman framework, ne zaman "kütüphane yeter"? — ve sormadan nasıl anlarım?
+## 6. Ne zaman framework, ne zaman "kütüphane yeter"?
 
 İki pratik soru kaldı. Önce kararı, sonra teşhisi.
 

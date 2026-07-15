@@ -218,7 +218,7 @@ The difference begins **after** you download:
   but you can't write code right away; first you have to **assemble** it with `django-admin
   startproject`.
 
-## 6. When a framework, when is "a library enough"? — and how do I tell without asking?
+## 6. When a framework, when is "a library enough"?
 
 Two practical questions remain. First the decision, then the diagnosis.
 
