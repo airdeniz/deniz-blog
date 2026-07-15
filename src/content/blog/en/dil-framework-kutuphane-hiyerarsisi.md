@@ -31,7 +31,7 @@ The small flaw in the ordering is this: thinking of it as one "large to small" a
 difference between a framework and a library. There are actually two axes:
 
 - **The scope axis:** The language is the broadest, the framework is a subset of it, the library
-  solves an even narrower problem. Your ordering is correct on this axis.
+  solves an even narrower problem. The opening ordering is correct on this axis.
 - **The control axis:** This is where the real distinction lives. Its famous name is **Inversion of
   Control**. In one sentence: **you call the library, but the framework calls you.**
 
