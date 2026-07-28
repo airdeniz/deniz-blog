@@ -1,6 +1,6 @@
 ---
 title: 'Hangi Veri Nereye: Data Warehouse, Lakehouse ve Gerçek Zamanlı Analitik Store'
-description: 'Analitik veriyi saklamanın üç klasik yolu vardır: temiz ve modellenmiş Data Warehouse, ham dosyayı da açık tabloyu da tutan Lakehouse, ve olay/telemetri akışını saniye altında sorgulatan gerçek zamanlı analitik store (ClickHouse, Druid, Pinot, Azure Data Explorer). "Hangi veri nereye?" sorusunu; her birinin kimliğini, sinyal kelimelerini, sınavların ve mimarların sevdiği tuzakları ve gerçek dünyada üçünün nasıl bir arada aktığını anlatan bir yazı. Fabric sadece bir örnek.'
+description: 'Analitik veriyi saklamanın üç klasik yolu vardır: temiz ve modellenmiş Data Warehouse, ham dosyayı da açık tabloyu da tutan Lakehouse, ve olay/telemetri akışını saniye altında sorgulatan gerçek zamanlı analitik store (ClickHouse, Druid, Pinot, Azure Data Explorer). "Hangi veri nereye?" sorusunu; her birinin kimliğini, sinyal kelimelerini, sınavların ve mimarların sevdiği tuzakları ve gerçek dünyada üçünün nasıl bir arada aktığını anlatan bir yazı.'
 pubDate: 2026-07-28
 tags: ['Data Warehouse', 'Lakehouse', 'Gerçek Zamanlı Analitik', 'OLAP', 'Veri Mimarisi', 'Big Data']
 draft: false

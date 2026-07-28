@@ -1,6 +1,6 @@
 ---
 title: 'Which Data Goes Where: Data Warehouse, Lakehouse, and the Real-Time Analytics Store'
-description: 'There are three classic ways to store analytical data: the clean, modeled Data Warehouse; the Lakehouse that holds both raw files and open tables; and the real-time analytics store that queries streaming events in sub-second time (ClickHouse, Druid, Pinot, Azure Data Explorer). A post on "which data goes where" — each one''s identity, its signal words, the traps exams and architects love, and how all three flow together in the real world. Fabric is just one example.'
+description: 'There are three classic ways to store analytical data: the clean, modeled Data Warehouse; the Lakehouse that holds both raw files and open tables; and the real-time analytics store that queries streaming events in sub-second time (ClickHouse, Druid, Pinot, Azure Data Explorer). A post on "which data goes where" — each one''s identity, its signal words, the traps exams and architects love, and how all three flow together in the real world.'
 pubDate: 2026-07-28
 tags: ['Data Warehouse', 'Lakehouse', 'Real-Time Analytics', 'OLAP', 'Data Architecture', 'Big Data']
 draft: false
