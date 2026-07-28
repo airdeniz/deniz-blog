@@ -12,7 +12,7 @@ Elinde üç soru olsun:
 2. "Son iki yılın ham tıklama kayıtları üzerinde bir churn (müşteri kaybı) modeli eğit."
 3. "Son 30 saniyede kaç kullanıcı 'ödeme' butonuna bastı?"
 
-Üçü de "veriyi bir yere koy, sonra sorgula" işine benziyor. İçgüdü hepsine "bir veritabanına atarız" demek ister. Ama bu üç sorunun doğru cevabı **üç ayrı depo tipidir** — ve yanlış depoyu seçmek, ya sistemi dize getirir ya da parayı çöpe atar.
+Üçü de "veriyi bir yere koy, sonra sorgula" işine benziyor. İçgüdü hepsine "bir veritabanına atarız" demek ister. Ama bu üç sorunun doğru cevabı **üç ayrı depo tipidir** — ve yanlış depoyu seçmek, ya sistemi dize getirir ya da bütçeyi boşa harcar.
 
 Bu üç depo, sektörde çoğu zaman şu adlarla anılır: **Data Warehouse** (veri ambarı), **Data Lakehouse** ve **gerçek zamanlı analitik store** (real-time / streaming analytics database). Microsoft Fabric'te bunlar sırasıyla Warehouse, Lakehouse ve Eventhouse olarak paketlenir; ama aynı üçlüyü Databricks + Snowflake + ClickHouse ile de, tamamen açık kaynak araçlarla da kurabilirsin. İsimler platforma göre değişir, **rol dağılımı değişmez.**
 
@@ -20,9 +20,9 @@ Bu yazı önce bu üçlünün nereye oturduğunu (ipucu: üçü de **OLTP değil
 
 ## Önce sınır: bunların hiçbiri senin uygulama veritabanın değil
 
-Kafayı karıştırmamak için baştan bir çizgi çekelim. Uygulamanın canlı çalışırken kullandığı veritabanı — sipariş yazan, sepeti güncelleyen PostgreSQL/MySQL/MongoDB — **OLTP** (Online Transaction Processing) dünyasındadır: satır satır, tek kaydı hızlıca yaz-oku, tutarlılık her şeyden önce gelir.
+Karışıklığı önlemek için baştan bir çizgi çekelim. Uygulamanın canlı çalışırken kullandığı veritabanı — sipariş yazan, sepeti güncelleyen PostgreSQL/MySQL/MongoDB — **OLTP** (Online Transaction Processing) dünyasındadır: satır satır, tek kaydı hızlıca yaz-oku, tutarlılık her şeyden önce gelir.
 
-Bu yazının üç kahramanı ise **OLAP** (Online Analytical Processing) tarafındadır: milyonlarca/milyarlarca satırı **toplu** tarayıp özet çıkarmak, gruplayıp saymak, trend bulmak için tasarlanmışlardır. Yani soru "şu tek siparişi getir" değil, "şu 400 milyon siparişi bölgeye göre topla"dır. Warehouse, Lakehouse ve gerçek zamanlı store; hepsi bu analitik sorunun farklı lezzetlerine verilmiş cevaplardır. Üçünü birbirinden ayıran şey de zaten **verinin şekli** ile **erişim biçimidir.**
+Bu yazının üç kahramanı ise **OLAP** (Online Analytical Processing) tarafındadır: milyonlarca/milyarlarca satırı **toplu** tarayıp özet çıkarmak, gruplayıp saymak, trend bulmak için tasarlanmışlardır. Yani soru "şu tek siparişi getir" değil, "şu 400 milyon siparişi bölgeye göre topla"dır. Warehouse, Lakehouse ve gerçek zamanlı store; hepsi bu analitik sorunun farklı tiplerine verilmiş cevaplardır. Üçünü birbirinden ayıran şey de zaten **verinin şekli** ile **erişim biçimidir.**
 
 ## 1. Data Warehouse — temiz, modellenmiş, güvenilir kat
 
@@ -45,10 +45,10 @@ Lakehouse'u anlamak için önce onun **neden doğduğunu** anlamak gerekiyor, ç
 
 2010'larda iki ayrı dünya vardı. Bir yanda **data warehouse**: güvenilir, tutarlı, ama pahalı, katı ve sadece yapılandırılmış veri alır — ham log dosyasını, videoyu, düzensiz JSON'u içine sokamazsın. Öbür yanda **data lake**: S3/HDFS üzerinde ucuza her şeyi (Parquet, JSON, görüntü, ne olursa) biriktiren dev bir dosya deposu — ama şemasız, ACID garantisi yok, kolayca "veri bataklığına" (data swamp) dönüşen bir yer. Ekipler ya birinde ya öbüründe boğuluyordu.
 
-**Lakehouse tam da bu ikisini birleştirme fikridir:** ucuz nesne depolamanın (data lake) üstüne, warehouse'un getirdiği disiplini — ACID transaction'lar, şema zorlaması, tablo semantiği — getirmek. Bunu mümkün kılan sihir **açık tablo formatlarıdır:** Delta Lake, Apache Iceberg, Apache Hudi. Bunlar Parquet dosyalarının üstüne bir metadata/işlem günlüğü katmanı serer; böylece "sıradan dosya yığını" birdenbire güvenilir, transaction'lı, zaman-yolculuğu yapılabilen bir **tabloya** dönüşür — ama veri hâlâ açık formatta, ucuz depoda, herkese açık durur.
+**Lakehouse tam da bu ikisini birleştirme fikridir:** ucuz nesne depolamanın (data lake) üstüne, warehouse'un getirdiği disiplini — ACID transaction'lar, şema zorlaması, tablo semantiği — getirmek. Bunu mümkün kılan asıl mekanizma **açık tablo formatlarıdır:** Delta Lake, Apache Iceberg, Apache Hudi. Bunlar Parquet dosyalarının üstüne bir metadata/işlem günlüğü katmanı serer; böylece "sıradan dosya yığını" birdenbire güvenilir, transaction'lı, zaman-yolculuğu yapılabilen bir **tabloya** dönüşür — ama veri hâlâ açık formatta, ucuz depoda, herkese açık durur.
 
 - **Kimin aracı:** veri mühendisi, data scientist (Spark/Python bilen).
-- **Veri tipi:** hepsi — yapılandırılmış tablo da, yarı yapılandırılmış JSON da, ham dosya (Files!) da.
+- **Veri tipi:** hepsi — yapılandırılmış tablo da, yarı yapılandırılmış JSON da, ham dosya da.
 - **Dil:** Spark (PySpark, Spark SQL); okumada çoğu platform bir salt-okunur SQL uç noktası da sunar.
 - **Tipik yük:** *medallion* mimarisi (bronze ham → silver temiz → gold servise hazır), büyük dosya işleme, ML için özellik hazırlama.
 - **Gecikme:** batch / micro-batch.
@@ -60,7 +60,7 @@ Kilit sezgi: lakehouse "warehouse'un yerine geçen" bir şey değil, ham veriyle
 
 Üçüncüsü, sektörde tek bir standart isme oturmayan ama kabaca **gerçek zamanlı / akış analitiği veritabanı** (real-time analytics database, streaming analytics store, kimi yerde "olay/zaman-serisi analitik motoru") denen kategoridir. Fabric bunu **Eventhouse** (altında Azure Data Explorer / Kusto motoru) olarak paketler; ama bağımsız dünyada karşılıkları **ClickHouse, Apache Druid, Apache Pinot** ve komşusu **Elasticsearch**'tür.
 
-Bu deponun derdi tek şey: **sürekli akan olay verisini, o veri daha saniyeler önce üretilmişken, milisaniyeler içinde sorgulatmak.** Warehouse'a veri gece girer; buraya veri **şimdi** girer ve **şimdi** sorgulanır.
+Bu deponun tek amacı var: **sürekli akan olay verisini, o veri daha saniyeler önce üretilmişken, milisaniyeler içinde sorgulatmak.** Warehouse'a veri gece girer; buraya veri **şimdi** girer ve **şimdi** sorgulanır.
 
 - **Kimin aracı:** gerçek zamanlı/operasyonel analitik yapan ekip, gözlemlenebilirlik (observability) ekibi.
 - **Veri tipi:** zaman serisi, olay (event), telemetri, log, clickstream — hep bir zaman damgasıyla akan, yüksek hacimli, yüksek kardinaliteli veri.
@@ -69,7 +69,7 @@ Bu deponun derdi tek şey: **sürekli akan olay verisini, o veri daha saniyeler 
 - **Gecikme:** **saniye altı**, near-real-time. Hem veri girişi hem sorgu tazedir.
 - **Sektörden örnekler:** ClickHouse, Apache Druid, Apache Pinot, Azure Data Explorer (Fabric Eventhouse), (arama tarafında) Elasticsearch.
 
-Neden ayrı bir motor gerekiyor? Çünkü bu tür sorgular — "milyarlarca satır arasında, son 1 dakikayı zaman kolonuna göre süz ve grupla" — kolon-tabanlı depolama, agresif indeksleme ve akış-anında ingest üzerine özel olarak tasarlanmış bir motor ister. Aynı işi bir warehouse'a yaptırmaya kalkarsan ya gecikme dakikalara çıkar ya maliyet patlar.
+Neden ayrı bir motor gerekiyor? Çünkü bu tür sorgular — "milyarlarca satır arasında, son 1 dakikayı zaman kolonuna göre süz ve grupla" — kolon-tabanlı depolama, agresif indeksleme ve akış-anında ingest üzerine özel olarak tasarlanmış bir motor ister. Aynı işi bir warehouse'a yaptırmaya çalışırsan ya gecikme dakikalara çıkar ya da maliyet katlanır.
 
 ## Karar tablosu: "hangi veri nereye?"
 

@@ -12,7 +12,7 @@ Say you have three questions in hand:
 2. "Train a churn model on two years of raw clickstream logs."
 3. "How many users hit the 'checkout' button in the last 30 seconds?"
 
-All three look like "put the data somewhere, then query it." The instinct is to say "we'll throw it in a database" for all of them. But the right answer to these three questions is **three different kinds of store** — and picking the wrong one either brings the system to its knees or throws money away.
+All three look like "put the data somewhere, then query it." The instinct is to say "we'll throw it in a database" for all of them. But the right answer to these three questions is **three different kinds of store** — and picking the wrong one either brings the system to its knees or wastes the budget.
 
 These three stores usually go by these names in the industry: **Data Warehouse**, **Data Lakehouse**, and the **real-time analytics store** (real-time / streaming analytics database). In Microsoft Fabric they're packaged as Warehouse, Lakehouse, and Eventhouse respectively; but you can build the same trio with Databricks + Snowflake + ClickHouse, or with fully open-source tools. The names change per platform — **the division of roles doesn't.**
 
@@ -22,7 +22,7 @@ This post first places where this trio sits (hint: none of them is **OLTP**), th
 
 To avoid confusion, let's draw a line up front. The database your app uses while running live — the PostgreSQL/MySQL/MongoDB that writes orders and updates carts — lives in the **OLTP** (Online Transaction Processing) world: read/write single records fast, row by row, with consistency above all.
 
-The three heroes of this post live on the **OLAP** (Online Analytical Processing) side: they're built to **bulk-scan** millions/billions of rows to produce summaries, group and count, find trends. So the question isn't "fetch this one order," it's "sum these 400 million orders by region." Warehouse, Lakehouse, and the real-time store are all answers to different flavors of this analytical question. What sets them apart is exactly the **shape of the data** and the **mode of access.**
+The three heroes of this post live on the **OLAP** (Online Analytical Processing) side: they're built to **bulk-scan** millions/billions of rows to produce summaries, group and count, find trends. So the question isn't "fetch this one order," it's "sum these 400 million orders by region." Warehouse, Lakehouse, and the real-time store are all answers to different types of this analytical question. What sets them apart is exactly the **shape of the data** and the **mode of access.**
 
 ## 1. Data Warehouse — the clean, modeled, trusted tier
 
@@ -45,10 +45,10 @@ To understand the lakehouse, you first have to understand **why it was born,** b
 
 In the 2010s there were two separate worlds. On one side, the **data warehouse**: reliable, consistent, but expensive, rigid, and it only takes structured data — you can't stuff a raw log file, a video, or messy JSON into it. On the other side, the **data lake**: a giant file store on S3/HDFS that cheaply piles up everything (Parquet, JSON, images, whatever) — but schemaless, no ACID guarantees, a place that easily rots into a "data swamp." Teams were drowning in one or the other.
 
-**The lakehouse is precisely the idea of merging these two:** bringing the warehouse's discipline — ACID transactions, schema enforcement, table semantics — on top of cheap object storage (the data lake). The magic that makes this possible is **open table formats:** Delta Lake, Apache Iceberg, Apache Hudi. These lay a metadata/transaction-log layer over Parquet files; so a "plain pile of files" suddenly becomes a reliable, transactional, time-travelable **table** — while the data still sits in an open format, in cheap storage, open to everyone.
+**The lakehouse is precisely the idea of merging these two:** bringing the warehouse's discipline — ACID transactions, schema enforcement, table semantics — on top of cheap object storage (the data lake). The mechanism that makes this possible is **open table formats:** Delta Lake, Apache Iceberg, Apache Hudi. These lay a metadata/transaction-log layer over Parquet files; so a "plain pile of files" suddenly becomes a reliable, transactional, time-travelable **table** — while the data still sits in an open format, in cheap storage, open to everyone.
 
 - **Whose tool:** the data engineer, the data scientist (who knows Spark/Python).
-- **Data type:** all of it — structured tables, semi-structured JSON, and raw files (Files!).
+- **Data type:** all of it — structured tables, semi-structured JSON, and raw files.
 - **Language:** Spark (PySpark, Spark SQL); for reads, most platforms also expose a read-only SQL endpoint.
 - **Typical workload:** the *medallion* architecture (bronze raw → silver clean → gold serving-ready), large file processing, feature prep for ML.
 - **Latency:** batch / micro-batch.
@@ -60,7 +60,7 @@ Key intuition: the lakehouse isn't something that "replaces the warehouse," it's
 
 The third one is a category that doesn't settle onto a single standard name in the industry, but is roughly called a **real-time / streaming analytics database** (real-time analytics database, streaming analytics store, sometimes "event/time-series analytics engine"). Fabric packages it as **Eventhouse** (Azure Data Explorer / Kusto engine underneath); but in the independent world its counterparts are **ClickHouse, Apache Druid, Apache Pinot** and the neighboring **Elasticsearch.**
 
-This store cares about one thing only: **querying continuously flowing event data, while that data was produced mere seconds ago, in milliseconds.** Data enters the warehouse overnight; here data enters **now** and is queried **now.**
+This store has a single purpose: **querying continuously flowing event data, while that data was produced mere seconds ago, in milliseconds.** Data enters the warehouse overnight; here data enters **now** and is queried **now.**
 
 - **Whose tool:** the team doing real-time/operational analytics, the observability team.
 - **Data type:** time series, events, telemetry, logs, clickstream — high-volume, high-cardinality data always flowing with a timestamp.
@@ -69,7 +69,7 @@ This store cares about one thing only: **querying continuously flowing event dat
 - **Latency:** **sub-second**, near-real-time. Both the ingest and the query are fresh.
 - **Industry examples:** ClickHouse, Apache Druid, Apache Pinot, Azure Data Explorer (Fabric Eventhouse), (on the search side) Elasticsearch.
 
-Why does this need a separate engine? Because these kinds of queries — "across billions of rows, filter the last 1 minute by the time column and group" — demand an engine purpose-built for column-based storage, aggressive indexing, and ingest-at-stream-speed. If you try to make a warehouse do this same job, either latency climbs into minutes or cost explodes.
+Why does this need a separate engine? Because these kinds of queries — "across billions of rows, filter the last 1 minute by the time column and group" — demand an engine purpose-built for column-based storage, aggressive indexing, and ingest-at-stream-speed. If you try to make a warehouse do this same job, either latency climbs into minutes or cost multiplies.
 
 ## Decision table: "which data goes where?"
 
