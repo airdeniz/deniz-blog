@@ -58,7 +58,7 @@ Key intuition: the lakehouse isn't something that "replaces the warehouse," it's
 
 ## 3. Real-time analytics store — query the flowing event in sub-second time
 
-The third one is a category that doesn't settle onto a single standard name in the industry, but is roughly called a **real-time / streaming analytics database** (real-time analytics database, streaming analytics store, sometimes "event/time-series analytics engine"). Fabric packages it as **Eventhouse** (Azure Data Explorer / Kusto engine underneath); but in the independent world its counterparts are **ClickHouse, Apache Druid, Apache Pinot** and the neighboring **Elasticsearch.**
+The third one is a category that doesn't settle onto a single standard name in the industry, but is roughly called a **real-time / streaming analytics database** (real-time analytics database, streaming analytics store, sometimes "event/time-series analytics engine"). Fabric packages it as **Eventhouse** (Azure Data Explorer / Kusto engine underneath); but in the independent world its counterparts are **ClickHouse, Apache Druid, Apache Pinot** and the closely related **Elasticsearch.**
 
 This store has a single purpose: **querying continuously flowing event data, while that data was produced mere seconds ago, in milliseconds.** Data enters the warehouse overnight; here data enters **now** and is queried **now.**
 

@@ -58,7 +58,7 @@ Kilit sezgi: lakehouse "warehouse'un yerine geçen" bir şey değil, ham veriyle
 
 ## 3. Gerçek zamanlı analitik store — akan olayı saniye altında sorgula
 
-Üçüncüsü, sektörde tek bir standart isme oturmayan ama kabaca **gerçek zamanlı / akış analitiği veritabanı** (real-time analytics database, streaming analytics store, kimi yerde "olay/zaman-serisi analitik motoru") denen kategoridir. Fabric bunu **Eventhouse** (altında Azure Data Explorer / Kusto motoru) olarak paketler; ama bağımsız dünyada karşılıkları **ClickHouse, Apache Druid, Apache Pinot** ve komşusu **Elasticsearch**'tür.
+Üçüncüsü, sektörde tek bir standart isme oturmayan ama kabaca **gerçek zamanlı / akış analitiği veritabanı** (real-time analytics database, streaming analytics store, kimi yerde "olay/zaman-serisi analitik motoru") denen kategoridir. Fabric bunu **Eventhouse** (altında Azure Data Explorer / Kusto motoru) olarak paketler; ama bağımsız dünyada karşılıkları **ClickHouse, Apache Druid, Apache Pinot** ve bunlara yakın konumdaki **Elasticsearch**'tür.
 
 Bu deponun tek amacı var: **sürekli akan olay verisini, o veri daha saniyeler önce üretilmişken, milisaniyeler içinde sorgulatmak.** Warehouse'a veri gece girer; buraya veri **şimdi** girer ve **şimdi** sorgulanır.
 
