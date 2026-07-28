@@ -1,5 +1,5 @@
 ---
-title: 'Aynı Veri Üç Ayrı Eve Nasıl Yerleşir: Data Warehouse, Lakehouse ve Gerçek Zamanlı Analitik Store'
+title: 'Hangi Veri Nereye: Data Warehouse, Lakehouse ve Gerçek Zamanlı Analitik Store'
 description: 'Analitik veriyi saklamanın üç klasik yolu vardır: temiz ve modellenmiş Data Warehouse, ham dosyayı da açık tabloyu da tutan Lakehouse, ve olay/telemetri akışını saniye altında sorgulatan gerçek zamanlı analitik store (ClickHouse, Druid, Pinot, Azure Data Explorer). "Hangi veri nereye?" sorusunu; her birinin kimliğini, sinyal kelimelerini, sınavların ve mimarların sevdiği tuzakları ve gerçek dünyada üçünün nasıl bir arada aktığını anlatan bir yazı. Fabric sadece bir örnek.'
 pubDate: 2026-07-28
 tags: ['Data Warehouse', 'Lakehouse', 'Gerçek Zamanlı Analitik', 'OLAP', 'Veri Mimarisi', 'Big Data']
@@ -144,4 +144,4 @@ Her depo, kendi güçlü olduğu işi yaparken diğerlerinden kopmaz: taze olay 
 
 `ALTER TABLE`'ın "esneklik iki ayrı şeydir" dersi gibi, burada da tek bir eksen var. Bir uçta **taze ama ham** (akan olaylar, ham dosyalar), diğer uçta **yavaş ama parlatılmış** (modellenmiş, güvenilir iş raporu) veri durur. Gerçek zamanlı store en taze uçtadır; warehouse en rafine uçta; lakehouse tam ortada, ham veriyi alıp rafine uca doğru taşıyan köprüdür.
 
-Dolayısıyla doğru soru "hangi depo daha iyi" değildir — hiçbiri diğerinin işini iyi yapmaz. Doğru soru, elindeki verinin **şeklinin** ve ona soracağın sorunun **tazeliğinin** bu eksende nereye düştüğüdür. Fabric bu üçlüyü Warehouse/Lakehouse/Eventhouse diye paketler, Databricks + Snowflake + ClickHouse başka türlü paketler; ama karar hep aynı kalır: **taze olayı gerçek zamanlı store'a, ham ve işlenmişi lakehouse'a, tek-doğru raporu warehouse'a.** Modern bir veri mimarisinde tek bir kahraman yoktur; üç ev vardır ve veri hepsinin arasında akar.
+Dolayısıyla doğru soru "hangi depo daha iyi" değildir — hiçbiri diğerinin işini iyi yapmaz. Doğru soru, elindeki verinin **şeklinin** ve ona soracağın sorunun **tazeliğinin** bu eksende nereye düştüğüdür. Fabric bu üçlüyü Warehouse/Lakehouse/Eventhouse diye paketler, Databricks + Snowflake + ClickHouse başka türlü paketler; ama karar hep aynı kalır: **taze olayı gerçek zamanlı store'a, ham ve işlenmişi lakehouse'a, tek-doğru raporu warehouse'a.** Modern bir veri mimarisinde tek bir kahraman yoktur; üç ayrı depo tipi vardır ve veri sürekli aralarında akar.
