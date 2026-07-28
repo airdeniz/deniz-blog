@@ -264,7 +264,7 @@ local
 ```
 
 Amaç, yazılan kodun **çok broker'lı** bir ortama nasıl tepki verdiğini kendi makinede
-test etmek: "Bir broker kapatılırsa kod patlıyor mu, yoksa öbür broker'a sorunsuz mu
+test etmek: "Bir broker kapatılırsa kod çöküyor mu, yoksa öbür broker'a sorunsuz mu
 geçiyor?"
 
 Prod'a çıkınca artık portlar değil, **IP/DNS** konuşur. Her sunucuda standart Kafka
@@ -301,7 +301,7 @@ verilir:
 kafka.bootstrap.servers = "10.0.1.10:9092, 10.0.1.11:9092, 10.0.1.12:9092"
 ```
 
-Sihir burada:
+Asıl mekanizma burada:
 
 1. Uygulama (client) açılınca bu listedeki **herhangi bir** broker'a bağlanır.
 2. Ona der ki: "Bana kümenin güncel haritasını (metadata) ver — hangi topic, hangi

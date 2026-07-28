@@ -257,7 +257,7 @@ başlangıç kısmına göz at:
 
 **C) "Kontrol kimde?" testi.** Zihinsel test: *"Ben mi onu çağırıyorum, o mu beni çağırıyor?"*
 
-- Kendi kodunun ortasında "hadi şimdi şu veriyi oku" diye onu sen çağırıyorsan (`pd.read_csv()`) →
+- Kendi kodunun ortasında "şimdi şu veriyi oku" diye onu sen çağırıyorsan (`pd.read_csv()`) →
   **kütüphane.**
 - Sen kodu yazıp bir köşeye koyuyorsun, arkadaki motor senin kodunu istediği zaman alıp çalıştırıyorsa
   → **framework.**

@@ -273,7 +273,7 @@ local
 ```
 
 The goal is to test on your own machine how the code you write reacts to a **multi-broker**
-environment: "If one broker is shut down, does the code blow up, or does it fail over to
+environment: "If one broker is shut down, does the code crash, or does it fail over to
 another broker seamlessly?"
 
 Once you go to prod, it's no longer ports but **IP/DNS** that do the talking. On each server
@@ -311,7 +311,7 @@ servers** list:
 kafka.bootstrap.servers = "10.0.1.10:9092, 10.0.1.11:9092, 10.0.1.12:9092"
 ```
 
-Here's the magic:
+Here's the key mechanism:
 
 1. When the application (client) starts, it connects to **any** broker in this list.
 2. It tells it: "Give me the current map (metadata) of the cluster — which topic, which

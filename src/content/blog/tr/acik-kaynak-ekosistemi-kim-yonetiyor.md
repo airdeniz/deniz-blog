@@ -1,6 +1,6 @@
 ---
 title: 'Monolitten Gelen Biri İçin: Bu Araçlar Birbirini Nereden Tanıyor, Ekosistemi Kim Yönetiyor?'
-description: 'Oracle gibi her şeyi tek çatı altında toplayan bir dünyadan gelince, açık kaynak araçlarının birbirine lego gibi oturması insana sihir gibi geliyor. Peki git PowerShell''de nasıl tanınıyor, pip install ne yapıyor, Airflow ile Spark hangi sözleşmeyle konuşuyor ve en önemlisi — bunları kim yönetiyor? Merkezde kimsenin olmadığı bir düzeni baştan kuran bir yazı.'
+description: 'Oracle gibi her şeyi tek çatı altında toplayan bir dünyadan gelince, açık kaynak araçlarının birbirine lego gibi oturması insana hayret verici geliyor. Peki git PowerShell''de nasıl tanınıyor, pip install ne yapıyor, Airflow ile Spark hangi sözleşmeyle konuşuyor ve en önemlisi — bunları kim yönetiyor? Merkezde kimsenin olmadığı bir düzeni baştan kuran bir yazı.'
 pubDate: 2026-07-06
 tags: ['Açık Kaynak', 'PATH', 'CLI', 'Python', 'Ekosistem', 'Standartlar', 'Backend']
 draft: false
@@ -60,7 +60,7 @@ PATH'te o sürümün klasörünün önce gelmesidir. **PATH'te önde olan kazan�
 Hiç yapılmadı. Ortada imzalanmış bir mutabakat yok. Bu konvansiyon **Unix'ten (1970'ler)**
 geliyor: komutlar diskte birer dosyadır, shell onları bir arama yolunda bulur. DOS bu mantığı
 taklit etti, Windows DOS'tan devraldı, PowerShell de Windows'tan. Yani Git veya Docker, Windows
-için özel bir "büyü" yapmaz; sadece işletim sisteminin **50 yıldır açık duran standart bir
+için olağanüstü bir şey yapmaz; sadece işletim sisteminin **50 yıldır açık duran standart bir
 kapısını** (PATH ve komut satırı konvansiyonlarını) kullanır.
 
 Buradaki kilit fikir aklıda kalsın, çünkü ikinci bölümde aynısı tekrarlanacak: **entegrasyon
@@ -101,7 +101,7 @@ Her araç, "benimle konuşmak istiyorsan şu kurallara uy" diyen bir sözleşme 
 - **Airflow** der ki: "Bana bir `Operator` sınıfı yaz, `execute()` metodunu doldur, gerisini ben
   hallederim." Herkes bu çerçeveye uyarak kendi "provider"ını yazar.
 
-Yani entegrasyon bir sihir değil; **herkesin uyduğu, önceden yayınlanmış açık sözleşmeler.** Bir
+Yani entegrasyon esrarengiz bir şey değil; **herkesin uyduğu, önceden yayınlanmış açık sözleşmeler.** Bir
 aracın diğerini "tanıması" demek, aslında o aracın diğerinin ilan ettiği sözleşmeye uyan bir kod
 parçası yazması demek.
 
@@ -127,11 +127,11 @@ değil. **Merkezî bir yönetici yok.** Onun yerine **katmanlı bir düzen** var
   Unicode, SQL standardı... Bunlar internetin ve işletim sistemlerinin ortak "veri tipleri" gibidir.
   Kimse bunları tek başına değiştiremez.
 - **Vakıflar** büyük projeleri barındırır. **Apache Software Foundation** (Kafka, Spark, Airflow,
-  Iceberg — modern bir veri stack'inin neredeyse tamamı!), Linux Foundation, Python Software
+  Iceberg — modern bir veri stack'inin neredeyse tamamı), Linux Foundation, Python Software
   Foundation... Bunlar kâr amacı gütmeyen, gönüllü ve şirket desteğiyle ayakta duran tarafsız
   yapılardır. Telif hakkını ve yönü onlar korur.
 - **Şirketler** kendi ürünlerinin API'larını yayınlar ve **geriye dönük uyumluluğa** titizlikle özen
-  gösterir. Çünkü bir API kırılırsa, o API'ya güvenen herkesin sistemi patlar ve kimse o aracı bir
+  gösterir. Çünkü bir API kırılırsa, o API'ya güvenen herkesin sistemi çöker ve kimse o aracı bir
   daha kullanmaz. Uyumluluk burada ticari bir zorunluluktur.
 - **Fiili (de facto) standartlar** ise en yaygın olan kazanınca kendiliğinden oluşur. Git'i bir kurul
   seçmedi; sadece herkes kullandı ve rakiplerini eledi. JSON'u kimse "standart" ilan etmedi; o kadar
@@ -157,7 +157,7 @@ kullandığı araçlarla konuşmak zorundadır. Bu yüzden Iceberg'i yazan çeki
 döşer, çünkü tutunmak ona lazımdır.
 
 **Aşama 2 — Topluluk baskısı.** Başarı hikâyeleri yayılır ("Iceberg'e geçtik, maliyet düştü,
-sorgular uçtu"). Bunu okuyan mühendisler Airflow'un GitHub'ında issue açar: "Iceberg'e geçtik ama
+sorgular hızlandı"). Bunu okuyan mühendisler Airflow'un GitHub'ında issue açar: "Iceberg'e geçtik ama
 sizde ona özel bir operatör yok, ne zaman ekleyeceksiniz?" Talep birikir.
 
 **Aşama 3 — Kararı iki güç veriyor.** Birincisi **gönüllü topluluk:** istekli bir geliştirici "benim
@@ -205,5 +205,5 @@ Monolitten gelen biri için "her şey birbirine nasıl bu kadar entegre?" diye �
 işin sırrı şu: **kimse bunları birbirine entegre etmedi.** Her araç, herkesin gördüğü açık bir kapı
 (PATH), açık bir depo (PyPI) ve açık bir sözleşme (API) bıraktı. O legolar birleştirildiğinde aslında
 yıllardır orada duran o kapılardan geçiliyor. Bir sonraki sefer `git status` yazıldığında ya da
-`pip install` çalıştırıldığında, arkada dönen şeyin bir sihir değil, 50 yıllık bir konvansiyon olduğu
+`pip install` çalıştırıldığında, arkada dönen şeyin esrarengiz bir şey değil, 50 yıllık bir konvansiyon olduğu
 görülüyor.

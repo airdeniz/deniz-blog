@@ -18,7 +18,7 @@ you, for example, say "don't use the hash, just spread messages across partition
 order"?
 
 The answer: yes. The mechanism that makes this decision is called the **partitioner**,
-and it comes in more than one flavor. But — and this is the real point of this post —
+and it comes in more than one variant. But — and this is the real point of this post —
 every choice buys you one thing while costing you another. It's worth going through them
 one by one.
 
