@@ -1,6 +1,6 @@
 ---
-title: 'What Is a Kafka Partitioner? Partitioning Strategies and Real-World Usage'
-description: 'The third post in the Kafka series: what is the partitioner that decides which partition a message goes to? Hash-based, round-robin, sticky and custom partitioners; the ordering-guarantee trade-off and how often each one is actually used in the real world.'
+title: 'Which Partition Does a Message Land In? Kafka Partitioner Strategies'
+description: 'The third post in the Kafka series: the partitioner that decides which partition each message lands in. Hash-based, round-robin, sticky and custom strategies; what each choice costs you in ordering guarantees, and how often each one actually shows up in production.'
 pubDate: 2026-07-03
 tags: ['Kafka', 'Partition', 'Partitioner', 'Distributed Systems', 'Backend']
 draft: false
@@ -8,57 +8,64 @@ draft: false
 
 This is the third installment of the Kafka series. The first post covered how a
 cluster is set up ([read it here](/en/blog/kafka-cluster-mimarisi/)); the second
-covered which partition a message gets written to, the role of the offset, and
-ordering guarantees ([read it here](/en/blog/kafka-partition-offset-siralama/)). In
-that second post we said this: a message lands in a partition via
+looked at which partition a message gets written to, the role of the offset,
+and ordering guarantees
+([read it here](/en/blog/kafka-partition-offset-siralama/)). The core formula
+from that second post was this: a message lands in a partition via
 `hash(key) % partition_count`.
 
-But who makes that decision? And more importantly: can this behavior be changed? Can
-you, for example, say "don't use the hash, just spread messages across partitions in
-order"?
+But who actually makes that decision? And more importantly: can the behavior be
+changed? Could you, say, tell Kafka "skip the hash, just deal messages out to
+partitions in turn"?
 
-The answer: yes. The mechanism that makes this decision is called the **partitioner**,
-and it comes in more than one variant. But — and this is the real point of this post —
-every choice buys you one thing while costing you another. It's worth going through them
-one by one.
+You could. The component that makes this decision is called the
+**partitioner**, and it comes in several variants. But — and this is the real
+point of the post — every choice buys you something while giving something else
+up. So the options are worth examining one by one, price tags included.
 
 ## What is a partitioner?
 
-The **partitioner** is the component that runs on the producer side and answers the
-question "which partition should this message go to?" **Right before** the producer sends
-a message, the partitioner kicks in and produces the target partition number.
+The **partitioner** is the component that runs on the producer side and answers
+one question: "which partition should this message go to?" **Right before** the
+producer sends a message, the partitioner steps in and determines the target
+partition number.
 
-Kafka's default behavior is this: if the message has a **key**, it takes the hash of that
-key and applies modulo by the partition count (the `hash(key) % partition_count` from the
-second post). If there's no key (`null`), a different strategy takes over. The details of
-that "different strategy" are exactly what require us to look at the partitioner variants.
+Kafka's default behavior works like this: if the message has a **key**, the key
+is hashed and the result is taken modulo the partition count (the
+`hash(key) % partition_count` from the second post). If there is no key
+(`null`), an entirely different strategy takes over. Understanding what that
+"different strategy" is means looking at the partitioner variants.
 
-On the producer side, this behavior is changed with a single configuration setting that
-specifies which partitioner class to use. Now let's look at the options one by one.
+On the producer side, the behavior is switched with a single configuration
+setting naming the partitioner class to use. Let's walk through the options in
+order.
 
 ## 1. Hash-Based (Keyed) Partitioner — the default
 
-This is the mechanism described in detail in the second post. The message is given a key
-(`order_id`, `user_id`, etc.) and Kafka picks the partition based on the hash of that key.
+This is the mechanism the second post described in detail. The message is given
+a key (`order_id`, `user_id`, and so on), and Kafka picks the partition based
+on that key's hash.
 
 ```
 order_id = 5   →  hash(5) % 3  →  P1  (always)
 ```
 
-The most critical property here: **the same key always goes to the same partition.** This
-way, all events belonging to the same order ("created → paid → shipped") stay in a single
-partition, in offset order, **sequential**.
+The critical property: **the same key always goes to the same partition.** All
+events belonging to one order ("created → paid → shipped") therefore stay in a
+single partition, in offset order, **sequential**.
 
 > If you need ordering, this is almost always the right answer.
 
-That's why this strategy is used in every scenario where events of the same entity must be
-processed in the correct order — CDC (Change Data Capture), finance, e-commerce, and so on.
-The pipeline in this project uses exactly this (with `order_id` as the key).
+That is why this strategy is the choice in every scenario where events of the
+same entity must be processed in the correct order — CDC (Change Data Capture),
+finance, e-commerce. The pipeline in this project uses exactly this, with
+`order_id` as the key.
 
 ## 2. Round-Robin Partitioner
 
-Round-Robin distributes messages across partitions **in order** without looking at the key
-at all: the first message to P0, the second to P1, the third to P2, the fourth back to P0…
+Round-Robin deals messages out to partitions **in turn**, without looking at
+the key at all: the first message to P0, the second to P1, the third to P2, the
+fourth back to P0…
 
 ```
 message 1 → P0
@@ -67,12 +74,12 @@ message 3 → P2
 message 4 → P0
 ```
 
-At first glance it's appealing: the load spreads perfectly evenly across partitions, and
-there's no hot-key risk. But there's a big price to pay here.
+At first glance it looks appealing: load spreads across partitions with perfect
+evenness, and the hot-key risk disappears. But it carries a heavy price.
 
 ### Round-Robin breaks ordering
 
-Suppose three events from the same user arrive in sequence:
+Imagine three events from the same user arriving back to back:
 
 ```
 User_A → Order Created      → P0
@@ -80,66 +87,70 @@ User_A → Payment Completed  → P1
 User_A → Shipment Prepared  → P2
 ```
 
-Kafka provides its ordering guarantee **only within a partition** — we covered this in the
-second post. Because these three events land in three different partitions, consumers read
-them independently and asynchronously. The consumer processing "Payment Completed" may act
-faster than the one processing "Order Created." The result: a payment gets processed while
-no order exists yet — a classic **race condition** and data inconsistency.
+Kafka guarantees ordering **only within a partition** — we saw this in the
+second post. Because these three events land in three separate partitions,
+consumers read them independently and asynchronously. The consumer handling
+"Payment Completed" may get there before the one handling "Order Created." The
+result: a payment is processed for an order that doesn't exist yet — a classic
+**race condition** and data inconsistency.
 
-> Round-Robin loses the ordering of related events. It is never used anywhere ordering
-> matters.
+> Round-Robin loses the ordering of related events. It is never used anywhere
+> that ordering matters.
 
 ## 3. Sticky Partitioner — the modern default (key = null)
 
-But what if the goal is "no key is provided, just distribute the data evenly"? You don't
-need Round-Robin for that. Since Kafka 2.4, the default mechanism that kicks in when the key
-is `null` is the **Sticky Partitioner**, and it has completely replaced the old Round-Robin.
+But what if the only goal is "no key, just spread the data evenly"? You don't
+need Round-Robin for that. Since Kafka 2.4, the default mechanism that takes
+over when the key is `null` is the **Sticky Partitioner**, and it has fully
+retired the old Round-Robin.
 
-The difference is in performance:
+The difference comes down to performance:
 
-- **Round-Robin** sends every single message to a different partition. This causes network
-  batches to be shipped constantly without ever filling up — that is, high **overhead**.
-- **Sticky Partitioner** collects messages into batches. Until a batch fills up, it writes
-  all messages to the **same** partition; once the batch fills and is sent, it moves on to
-  the next partition.
+- **Round-Robin** sends every single message to a different partition. Network
+  batches leave constantly without ever filling up — which means high
+  **overhead**.
+- **Sticky Partitioner** accumulates messages into batches instead. Until a
+  batch fills, it writes every message to the **same** partition; once the
+  batch is full and sent, it moves on to the next partition.
 
-The end result is that the load still spreads evenly across partitions, but because the
-batches are fully filled, throughput improves noticeably. This is the ideal choice in
-scenarios where order doesn't matter — metrics collection, IoT sensor data, clickstream.
+The load still ends up evenly distributed across partitions — but because the
+batches travel full, throughput improves noticeably. For scenarios where order
+is irrelevant — metrics collection, IoT sensor data, clickstream — this is the
+ideal choice.
 
-Note: the Sticky Partitioner, just like Round-Robin, does **not** provide an ordering
-guarantee — it simply doesn't provide one in a more performant way.
+Note: like Round-Robin, the Sticky Partitioner does **not** guarantee ordering
+— it simply does the same job far more efficiently.
 
 ## 4. Custom Partitioner
 
-Sometimes none of the built-in strategies fit the business logic. In that case you implement
-the `Partitioner` interface by hand and write a custom class.
+Sometimes none of the built-in strategies fit the business logic. In that case
+you implement the `Partitioner` interface yourself and write a custom class.
 
-The most classic scenario is the **multi-tenancy** and **hot partition** problem. Suppose
-there's a SaaS company: one enormous "Premium" customer, plus hundreds of small "Free"
-customers. If you leave it to the hash, the Premium customer's millions of events can land
-in a single partition and lock it up — the very same **data skew** problem from the second
-post.
+The classic scenario is the **multi-tenancy** and **hot partition** problem.
+Picture a SaaS company: one enormous "Premium" customer on one side, hundreds
+of small "Free" customers on the other. Left to the hash, the Premium
+customer's millions of events can pile onto a single partition and lock it up —
+the very **data skew** problem from the second post.
 
-With a custom partitioner, the load can be isolated like this: if a message comes from a
-Premium customer, it's spread across a few reserved partitions, while all Free customers are
-funneled into a single partition. Schematically:
+A custom partitioner isolates the load like this: messages from the Premium
+customer are spread across a few partitions reserved for it, while all the Free
+customers are gathered into a single partition. Schematically:
 
 ```
 Premium tenant  →  P0, P1, P2  (load is distributed)
-Free tenants    →  P3          (all funneled into one partition)
+Free tenants    →  P3          (all gathered into one partition)
 ```
 
-The idea here is that partition selection is now determined not by math but by **business
-logic**. This path opens up for special needs like multi-tenancy, co-location (deliberately
-keeping related data in the same partition), or co-partitioning. But it has a cost:
-responsibility for all the guarantees — ordering, hot keys, rebalancing — now lies with the
-**developer**.
+The real idea here: partition selection is no longer decided by math but by
+**business logic**. That door opens for special needs like multi-tenancy,
+co-location (deliberately keeping related data in the same partition), or
+co-partitioning. But it has a cost: responsibility for every guarantee —
+ordering, hot keys, rebalancing — now rests on the **developer's** shoulders.
 
-## In the real world, how much is each one used?
+## How much is each one actually used?
 
-In theory, all four options are on the table. But the actual distribution in production
-environments is quite lopsided:
+In theory, all four options are on the table. The actual distribution in
+production environments is decidedly lopsided:
 
 | Partitioner | Usage Share | Most Common Where | Ordering Guarantee |
 |---|---|---|---|
@@ -148,37 +159,40 @@ environments is quite lopsided:
 | **Custom** | ~1–5% | Multi-tenancy, co-location | Depends on the scenario |
 | **Round-Robin** | <1% | Testing / rare legacy systems | No |
 
-Why is it so lopsided?
+The reasons behind the imbalance:
 
-- **Hash-Based is the overwhelming majority**, because in most real projects data
-  consistency and processing order matter more than anything else. The `INSERT → UPDATE →
-  DELETE` events of the same record (the row with the same primary key) must be processed in
-  order; otherwise the target replica gets corrupted.
-- **Sticky has become the standard for keyless data** and has retired the old Round-Robin.
-- **Custom is rare**, because it's only written when the default algorithm isn't enough for a
-  special case — and it's costly both to write and to maintain.
-- **Round-Robin is almost never used**: it breaks ordering because it ignores the key, and it
-  distributes messages to partitions one at a time, so batches are shipped in small pieces
-  before filling up — which increases the request count and raises latency. For keyless data
-  there's already something better (Sticky).
+- **Hash-Based dominates** because in most real projects, data consistency and
+  processing order come before everything else. The `INSERT → UPDATE → DELETE`
+  events of the same record (the row with the same primary key) must be
+  processed in order; otherwise the target replica gets corrupted.
+- **Sticky has become the standard for keyless data** and pushed the old
+  Round-Robin out of service.
+- **Custom is rare** because it is only written when the default algorithm
+  falls short in a special case — and it is costly both to write and to
+  maintain.
+- **Round-Robin is almost never used**: it breaks ordering by ignoring the key,
+  and by dealing messages out one at a time it ships batches before they fill —
+  in small pieces — which drives up the request count and the latency. For
+  keyless data, something better (Sticky) already exists.
 
 ## Summary: the decision matrix
 
-When designing a new pipeline, a single question usually sets your direction:
+When designing a new pipeline, one question usually sets the direction:
 
 > **Does the order of related events matter?**
 
-- **Yes** → give the message a meaningful **key** (`order_id`, `user_id`) and go with the
-  default **Hash-Based** partitioner. Order is preserved.
-- **No, the only concern is maximum throughput and even distribution** → leave the key
-  `null`, and the **Sticky Partitioner** handles it automatically and performantly.
-- **None of the defaults fit the business logic** (hot-tenant isolation, co-location) → then,
-  and only then, write a **Custom Partitioner**.
+- **Yes** → give the message a meaningful **key** (`order_id`, `user_id`) and
+  go with the default **Hash-Based** partitioner. Order is preserved.
+- **No — the only goal is maximum throughput and even distribution** → leave
+  the key `null`; the **Sticky Partitioner** handles it automatically and
+  efficiently.
+- **None of the defaults fit the business logic** (hot-tenant isolation,
+  co-location) → then, and only then, write a **Custom Partitioner**.
 
-Round-Robin can, in practice, be crossed off the list. Everywhere you'd want "keyless but
-evenly distributed," its modern and faster form — the Sticky Partitioner — is already at
-work.
+Round-Robin can in practice be crossed off the list. Anywhere you'd want
+"keyless but evenly distributed," its modern, faster successor — the Sticky
+Partitioner — is already on duty.
 
-In the next post, we'll take a closer look at how the data written to partitions this way is
-read at scale on the consumer side — consumer groups, rebalancing, and offset commit
-strategies.
+In the next post, we'll look more closely at how data written to partitions
+this way gets read at scale on the consumer side — consumer groups,
+rebalancing, and offset commit strategies.

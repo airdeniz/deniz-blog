@@ -1,107 +1,108 @@
 ---
-title: 'How Does a Kafka Cluster Work?'
-description: 'A Kafka cluster architecture, explored through the concepts of brokers, partitions, leader/replica, replication, KRaft, data flow with CDC, and consumer groups. (Kafka series — part 1)'
+title: 'Anatomy of a Kafka Cluster: Brokers, Partitions, and Replication'
+description: 'The inner workings of Kafka through a three-broker cluster: how data spreads across brokers, what leaders and replicas do, what changed when KRaft took over metadata from ZooKeeper, and how CDC tools capture changes at the source. (Kafka series — part 1)'
 pubDate: 2026-07-02
 tags: ['Kafka', 'Cluster', 'CDC', 'Distributed Systems', 'Backend']
 draft: false
 ---
 
-**Apache Kafka** is an event streaming platform that moves data flowing between
-systems in a distributed and durable way. Its greatest strength is that it can
-instantly collect data produced at the source and distribute it, independently,
-to dozens of different services that care about that data.
+**Apache Kafka** is an event streaming platform that moves data between systems
+in a distributed, durable way. Its greatest strength is this: it collects data
+the moment it's produced at the source and distributes it to dozens of different
+services that care about it — each one independent of the others.
 
-This post looks at how a Kafka cluster works. As an example, we'll work through a
-**3-broker** cluster. First, it's worth noting this basic equation:
+In this post we'll walk through how a Kafka cluster works, step by step, using a
+**3-broker** cluster as our example. Before we start, keep this basic equation
+in mind:
 
 > **1 broker = 1 Kafka service.**
 
 ## Why do we need more than one broker?
 
-So why do we need multiple Kafka services running in parallel? Because a single
-service may not be enough to provide the required I/O power, network power, RAM,
-and CPU power. Even with the best machine, at the end of the day you run into
-**hardware limits**.
+Why isn't a single Kafka service enough — why do several need to run in
+parallel? Because one service may not be able to supply the required I/O
+throughput, network bandwidth, RAM, and CPU power on its own. Even on the most
+powerful machine money can buy, you eventually run into **hardware limits**.
 
-For this reason, you can use multiple brokers isolated from one another:
+That's why multiple brokers are run in isolation from one another:
 
-- Brokers defined within the same Docker Compose, running in separate containers,
-- Multiple brokers on the same machine, fully isolated from one another,
-- Brokers on separate servers, isolated from one another.
+- Brokers defined in the same Docker Compose file, each in its own container,
+- Multiple brokers on the same machine, fully isolated from each other,
+- Brokers spread across separate servers.
 
-The isolation here is **about runtime**; from a data perspective the brokers are
-not entirely separate. Because of needs like leader election and metadata
-synchronization, they are constantly communicating with each other. What the
-separation means is this: each broker actually runs on **its own CPU and its own
-memory**.
+The isolation here is at the **runtime level**; from a data perspective, the
+brokers are not cut off from each other. They communicate constantly, driven by
+needs like leader election and metadata synchronization. What the separation
+really means is this: each broker runs on **its own CPU and its own memory**.
 
 ## Why is data distributed?
 
-What's really needed here is to provide the **power to distribute data**. So why is
-data distributed? Because we want the data produced at the source to be processed,
-and — before it's processed — to be taken from where it was produced and moved to
-other services, so that the software doing the producing can focus on its own work.
+The real goal is gaining the **power to distribute data**. So why distribute it
+at all? Because data produced at the source needs to be processed, and before
+that, it needs to be taken from where it was produced and moved to other
+services — so the software producing it can focus on its actual job.
 
-This is exactly where Kafka comes in. When an order is created in an order system,
-different **consumer groups** (a concept we'll touch on later) can read the same
-event:
+This is exactly where Kafka comes in. When a new order is created in an order
+system, different **consumer groups** (we'll get to this concept shortly) can
+read the same event:
 
 - One forwards it to the payment service,
 - One triggers the shipping service,
 - One sends a notification email to the customer.
 
-They all take data from the same topic, the same event, and use it for **different
-jobs**. For example, think of a stock alert service. If there's a Kafka service
-feeding it data, then when a product's stock drops below 10 units, a service can be
-triggered to alert the relevant team via Slack or some other application.
+They all take data from the same topic, the same event, but use it for
+**different jobs**. Picture a stock alert service: fed by Kafka, it can
+automatically notify the relevant team through Slack or another application
+whenever a product's stock drops below 10 units.
 
 ## How does Kafka detect changes at the source?
 
-So how does Kafka detect a new order placed on the production side, a status change
-on that order, or that the order was deleted from the system? This is where **CDC
-(Change Data Capture)** tools come in.
+So how does Kafka learn about a new order on the production side, a status
+change on that order, or its deletion? This is where **CDC (Change Data
+Capture)** tools come in.
 
-At this point a company can take one of three paths:
+A company has three paths to choose from here:
 
 - Build its own CDC tool,
-- Use an open source CDC tool (for example **Debezium**),
-- Buy one from a vendor (for example **Oracle GoldenGate**).
+- Use an open source CDC tool (for example, **Debezium**),
+- Buy one from a vendor (for example, **Oracle GoldenGate**).
 
-These CDC tools read any DML operation in the source database instantly from the
-logs:
+CDC tools read every DML operation in the source database straight from its
+logs, the moment it happens:
 
-- **WAL** in PostgreSQL (for this, the WAL log level must be `logical`),
-- **redo log** in Oracle.
+- The **WAL** in PostgreSQL (this requires the WAL level to be `logical`),
+- The **redo log** in Oracle.
 
-And they carry the data over to Kafka. On update operations they carry this data
-as both **before** and **after**. The logic works like this:
+They then forward the data to Kafka. For update operations, the data is carried
+in both its **before** and **after** states. The logic works like this:
 
 | Operation | before | after |
 | --- | --- | --- |
 | **INSERT** | — (no prior record in the system) | populated |
 | **UPDATE** | populated | populated |
-| **DELETE** | populated | — (no content, since the row is deleted) |
+| **DELETE** | populated | — (no content, since the row is gone) |
 
-That is, when a brand-new record that didn't exist before is created, there can be
-no before; the message at that offset contains only after. On a delete operation,
-since the row is deleted, only before comes populated.
+In other words, when a record that never existed before is created, there can be
+no before; the message at that offset carries only an after. On a delete, the
+row no longer exists, so only the before arrives populated.
 
-The CDC tool tracks this via a **unique column (key)** or columns in each table. If
-no such definition was made on the source side, then it behaves as if all columns
-together provide uniqueness — which is not really a desirable situation.
+The CDC tool does this tracking through a **unique column (key)** — or a group
+of columns — in each table. If no such definition exists on the source side, it
+treats all columns together as if they guaranteed uniqueness, which is hardly a
+desirable situation.
 
-This data flowing into Kafka can be viewed either through a Kafka UI tool or through
-third-party tools (for example **Redpanda**).
+The data flowing into Kafka can be inspected either through the Kafka UI or
+through third-party tools such as **Redpanda**.
 
 ## Partition and broker distribution within the cluster
 
-Now back to the situation in the cluster. Imagine 3 brokers: **Broker1, Broker2,
-Broker3**. Suppose a topic named `orders` is created and given **3 partitions**:
-**P0, P1, P2**.
+Back to the cluster. Say we have 3 brokers: **Broker1, Broker2, Broker3**.
+Suppose a topic named `orders` is created and given **3 partitions**: **P0, P1,
+P2**.
 
-Note this carefully: a topic is a **logical** concept. What you really need to focus
-on is the **partitions and brokers**. In this scenario where the load is evenly
-distributed — that is, in this example — each broker holds 2 partitions:
+Here's a critical distinction: a topic is a **logical** concept. What actually
+deserves your attention is the **partitions and the brokers**. In this example,
+with the load evenly balanced, each broker ends up holding 2 partitions:
 
 ```
 Broker 1   →   P0 (leader)    P2 (replica)
@@ -111,67 +112,68 @@ Broker 3   →   P2 (leader)    P1 (replica)
 
 ### What are leader and replica?
 
-So what are the concepts of **leader** and **replica** here?
+So what do **leader** and **replica** mean in this diagram?
 
-- If a partition is in the **leader** position on a broker, it means that broker
-  handles the write and read operations for that partition.
-- If a partition is in **replica** mode on a broker, this is also called a
-  **follower** partition. Followers continuously pull data from their own leader
+- If a partition sits on a broker in the **leader** position, that broker
+  handles the reads and writes for that partition.
+- If a partition sits on a broker in **replica** mode, it's also called a
+  **follower** partition. Followers continuously pull data from their leader
   partitions.
 
-This pulling is not a periodic refresh but rather an almost **real-time streaming**
-flow of data. To put a number on it, under default settings this interval is
-**500 ms**.
+This pulling is not a periodic refresh but a near **real-time stream** of data.
+To put a number on it: under default settings, the interval is **500 ms**.
 
-> A partition cannot be leader on more than one broker.
+> A partition cannot be the leader on more than one broker at once.
 
 ### Replication factor
 
-How many replicas a partition will have is determined by the **replication factor**
+How many replicas a partition gets is set by the **replication factor**
 parameter:
 
-- **replication factor = 2** → 1 leader + 1 replica. (This was the case in the example above.)
+- **replication factor = 2** → 1 leader + 1 replica. (That was the example above.)
 - **replication factor = 3** → 1 leader + 2 replicas.
 
-In the real world, **replication factor = 3** is generally taken as the baseline.
+In the real world, **replication factor = 3** is the usual baseline.
 
-A broker can hold more than one replica partition; Kafka places no limit on this.
-The limit is determined entirely by the broker's hardware capacity: disk, RAM, CPU,
-network bandwidth.
+A broker can hold more than one replica partition; Kafka imposes no limit here.
+The limit is drawn entirely by the broker's hardware capacity: disk, RAM, CPU,
+and network bandwidth.
 
 ## From ZooKeeper to KRaft: who manages the metadata?
 
-Up to this point, we've dealt with which broker each partition sits on, and who is
-leader and who is follower. But where is all this "map" — that is, the metadata —
-kept? This is precisely the part of Kafka that has changed the most in recent years.
+So far we've been talking about which partition lives on which broker, and who
+is leader versus follower. But where is that "map" — the metadata — actually
+kept? This is precisely the part of Kafka that has changed the most in recent
+years.
 
-In the old architecture, Kafka kept this metadata (the broker and leader map) not
-within itself but in a separate external **ZooKeeper** cluster. This had a few
-drawbacks:
+In the old architecture, Kafka kept this metadata (the broker and leader map)
+not within itself but in a separate, external **ZooKeeper** cluster. That came
+at a price:
 
 - When the **controller** broker responsible for the metadata crashed, the new
-  controller had to load all the metadata from ZooKeeper **from scratch**. On large
-  clusters this recovery could take minutes.
-- In practice, the partition count hit a ceiling around ~200 thousand.
-- Two separate systems (Kafka + ZooKeeper) had to stay constantly in sync; this
+  controller had to load all of it from ZooKeeper **from scratch**. On large
+  clusters, that recovery could take minutes.
+- In practice, the partition count hit a ceiling at around ~200 thousand.
+- Two separate systems (Kafka + ZooKeeper) had to stay in constant sync, which
   meant both a risk of metadata inconsistency and extra operational overhead
   (separate setup, separate maintenance).
 
-With **KRaft**, this external dependency was eliminated entirely. Metadata is now
-managed within Kafka itself using the **Raft consensus** algorithm. As a result,
-controller failover dropped below a second, the partition limit was effectively
-removed, and there was no longer a separate system to manage.
+**KRaft** eliminated this external dependency entirely. Metadata is now managed
+inside Kafka itself, through the **Raft consensus** algorithm. The results:
+controller failover dropped below a second, the partition ceiling effectively
+disappeared, and there was no longer a second system to operate.
 
 ### Why is the controller count always odd?
 
-ZooKeeper or KRaft — what both have in common is that they operate through a
-**quorum (majority)** mechanism. For this coordination layer to make a decision (for
-example, to elect a new controller), **more than half** of the nodes must be up. The
-number of crashes that can be tolerated is found by this simple formula:
+ZooKeeper and KRaft share one mechanism: **quorum (majority)**. For this
+coordination layer to make a decision — electing a new controller, say — **more
+than half** of its nodes must be up. A simple formula gives the number of
+crashes it can tolerate:
 
 > tolerated crashes = (N − 1) / 2
 
-Comparing odd and even numbers makes it clear why an even number is illogical:
+Put odd and even counts side by side and it becomes clear why an even number
+makes no sense:
 
 | Node count | Needed for majority | Tolerated crashes |
 | --- | --- | --- |
@@ -179,54 +181,53 @@ Comparing odd and even numbers makes it clear why an even number is illogical:
 | **4** (even) | 3 | 1 |
 | **5** (odd) | 3 | 2 |
 
-Notice that **4 nodes provide no additional resilience compared to 3 nodes**; both
-tolerate only 1 crash. The 4th node merely increases the cost and the
-synchronization overhead. On top of that, an even number increases the
-**split-brain** risk: when the cluster splits in two (a network partition), each
-half is left with 2 nodes and neither can achieve a majority. That's why the
-coordination layer is always given an odd number like **3, 5, 7**.
+Notice that **4 nodes buy you no extra resilience over 3**; both tolerate just
+1 crash. The fourth node only adds cost and synchronization overhead. Worse, an
+even count amplifies the **split-brain** risk: if the cluster splits in two (a
+network partition), each half is left with 2 nodes and neither can reach a
+majority. That's why the coordination layer is always given an odd number —
+**3, 5, 7**.
 
-Keep in mind that this "odd number" rule applies to the **controller/quorum** layer.
-The number of **brokers** that hold the actual data can be even too (4, 6, 8); what
-matters there is not quorum but being able to comfortably distribute the replication
-factor and balance the load. Still, since the minimum production setup requires at
-least 3 brokers for `replication factor = 3`, in practice the broker side also
-usually starts with an odd number (at least 3), and a general "odd number" habit has
-taken hold in the industry.
+One distinction worth keeping straight: this "odd number" rule applies to the
+**controller/quorum** layer. The number of **brokers** holding the actual data
+can perfectly well be even (4, 6, 8); what matters there isn't quorum but
+distributing the replication factor comfortably and balancing the load. Still,
+since a minimum production setup needs at least 3 brokers for
+`replication factor = 3`, the broker side usually starts with an odd number (at
+least 3) too, and a general "odd number" habit has settled into the industry.
 
 ## Consumer group
 
-As for the topic of consumer groups; what's meant here is **groups of services that
-read the same topic but do different jobs**. While one service routes the data
-coming from Kafka into a reporting flow, another service might send an email using
-that same data.
+A consumer group refers to **groups of services that read the same topic but do
+different jobs**. While one service routes the data coming from Kafka into a
+reporting flow, another might use that same data to send an email.
 
 ## A topic is actually read from more than one broker
 
-Now the two things described from the beginning can be combined, because they sit
-together nicely in your mind: partition distribution + consumer group. When a topic
-is created, its partitions are distributed across the brokers; each partition has a
-leader on one broker and follower replicas on other brokers. So a single topic is
-physically written **split across the disks of multiple brokers** — you shouldn't
-think of a topic as a file sitting in one place.
+Now we can join the two threads we've been following, because together they
+complete the picture: partition distribution + consumer groups. When a topic is
+created, its partitions are spread across the brokers; each partition has a
+leader on one broker and follower replicas on others. A single topic is
+therefore physically written **split across the disks of multiple brokers** —
+don't picture a topic as a file sitting in one place.
 
-So how does a consumer read this distributed structure? When connecting, the
-consumer provides not a single broker address but a **bootstrap servers** list.
-Through this list it connects to Kafka, obtains the "which partition is on which
-broker?" map (metadata), and goes directly to the relevant brokers.
+So how does a consumer read this scattered structure? When connecting, a
+consumer supplies not a single broker address but a **bootstrap servers** list.
+Through that list it connects to Kafka, obtains the "which partition is on
+which broker?" map (the metadata), and goes straight to the relevant brokers.
 
-Here's the nice part: multiple consumers with the same `group.id` share the
-partitions among themselves. Say Consumer 1 reads Partition 0 on Broker 1, while
-Consumer 2 reads Partition 1 on Broker 2. This way a single topic is read in
-**parallel** from multiple brokers at the same time. And if a broker crashes, the
-followers take over the leadership of those partitions and reading continues
-uninterrupted.
+Here's the most efficient part: multiple consumers sharing the same `group.id`
+divide the partitions among themselves. While Consumer 1 reads Partition 0 on
+Broker 1, Consumer 2 reads Partition 1 on Broker 2. A single topic is thus read
+in **parallel** from several brokers at once. And if a broker crashes, the
+followers take over leadership of its partitions and reading continues without
+interruption.
 
 ---
 
-So far we've covered how the cluster is set up, how data is distributed across the
-brokers, and how it's read. But when you drop down to the level of a single message,
-how do things work — which partition does a message land in, what is an offset for,
-and how far does the ordering guarantee hold? These are covered in the second post
-of the series:
+We've now covered how the cluster is set up, how data is distributed across the
+brokers, and how it's read back. But what happens at the level of a single
+message — which partition does it land in, what is an offset for, and how far
+does the ordering guarantee actually hold? That's the subject of the second post
+in the series:
 **[Partitions, Offsets, and Ordering Guarantees in Kafka »](/en/blog/kafka-partition-offset-siralama/)**

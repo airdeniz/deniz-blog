@@ -1,6 +1,6 @@
 ---
-title: 'Why Isn''t SQL as "Flexible" as NoSQL — and How Do the Two Live Together in One Project?'
-description: 'If a column goes in within seconds via ALTER TABLE, why is SQL called "inflexible"? Because "flexibility" means two things: the micro-flexibility of adding a column, versus the architectural flexibility of changing billions of rows without downtime, a flexible schema, and horizontal scaling. A post on why that rigidity is actually a safety trade-off, and why the real-world answer is using both together (polyglot persistence).'
+title: 'Why SQL Isn''t Considered "Flexible" — and Why "SQL or NoSQL" Is the Wrong Question'
+description: 'If ALTER TABLE adds a column in seconds, why does SQL get called "inflexible"? Because flexibility means two different things: the micro-flexibility of adding a column, and the architectural flexibility of changing billions of rows without downtime, storing schemaless data, and scaling horizontally. This post argues that SQL''s rigidity is not a flaw but a deliberate safety trade-off — and that the real-world answer is combining both in one project (polyglot persistence).'
 pubDate: 2026-07-14
 tags: ['SQL', 'NoSQL', 'Database', 'Polyglot Persistence', 'Scaling', 'Backend']
 draft: false
@@ -12,32 +12,35 @@ Adding a column to a table is usually a one-line job:
 ALTER TABLE products ADD COLUMN warranty_months INT;
 ```
 
-The command finishes in seconds. That's exactly why "SQL isn't as flexible as NoSQL" sounds unfair
-the first time you hear it: if adding a new field, dropping a column, or adding an index to one is
-this easy, what's inflexible about it?
+The command completes in seconds. Which is exactly why "SQL isn't as flexible as
+NoSQL" sounds unfair the first time you hear it: if adding a field, dropping a
+column, or defining an index is this easy, what's inflexible about it?
 
-The point to catch is this: the word "flexibility" here means two completely different things.
-Running a single `ALTER TABLE` in DBeaver is flexibility at the **micro level.** Flexibility at the
-**architectural** level means something else entirely: the database **adapting instantly to
-variable data types**, being able to change **billions of rows without downtime**, and **scaling
-out without limit.**
+The subtlety is this: "flexibility" here means two entirely different things.
+Running a single `ALTER TABLE` in DBeaver is flexibility at the **micro level.**
+Flexibility at the **architectural level** is something else altogether: a database
+that **adapts instantly to variable data types**, can change **billions of rows
+without downtime**, and **scales out without limit.**
 
-This post builds up why SQL is considered "rigid-schema" in four points, then shows that this
-rigidity is not a flaw but a **safety trade-off** — and finally explains, through a concrete
-scenario, that in the real world the question isn't "SQL or NoSQL" but using both together.
+This post first builds the case for why SQL counts as "rigid schema" in four
+sections, then shows that this rigidity is not a flaw but a **safety trade-off** —
+and finally walks through a concrete scenario showing that in the real world the
+question isn't "SQL or NoSQL" but how to use both together.
 
 ## 1. The "everyone in class wears the same uniform" rule
 
-In SQL, when you add a new column to a table, that column applies to **every row** in the table.
-No exceptions.
+In SQL, when a new column is added to a table, it applies to **every row** in that
+table. No exceptions.
 
-Suppose a `warranty_months` column is added to the `products` table. If there are 10 million
-products, the `warranty_months` field now opens up on all 10 million rows. For products with no
-warranty, that field is forced to stay `NULL` (empty). Every row must wear the same schema uniform
-— even if a field sits empty, that cell is there and takes up space.
+Suppose a `warranty_months` column is added to the `products` table. If the table
+holds 10 million products, all 10 million rows now carry a `warranty_months` field.
+For products with no warranty, that field is forced to stay `NULL`. Every row must
+wear the same schema uniform — even when the field sits empty, the cell is there and
+takes up space.
 
-On the document side of NoSQL — MongoDB, for example — there's a **collection** instead of a
-"table" and a **document** instead of a "row," and each document is independent of the others:
+On the document side of NoSQL — MongoDB, for example — there's a **collection**
+instead of a table and a **document** instead of a row, and each document is
+independent of the others:
 
 ```
 SQL (every row, same schema)        NoSQL / Document (each doc, its own schema)
@@ -49,55 +52,61 @@ SQL (every row, same schema)        NoSQL / Document (each doc, its own schema)
 +------+---------+----------+
 ```
 
-Each document determines its own structure; a field that isn't there simply doesn't exist for that
-document — it doesn't even need to be defined. This is the flexibility that's called "schemaless."
+Each document defines its own structure; a field a document doesn't have simply
+doesn't exist for it — it never even needs to be declared. That is precisely the
+flexibility people call "schemaless."
 
-## 2. Adding a column in production is not a "one-line job"
+## 2. In production, adding a column is not a "one-line job"
 
-In a development environment, running `ALTER TABLE ADD COLUMN` on an empty or lightly-populated
-table really does take 1 second. But in production, things change.
+In a development environment, `ALTER TABLE ADD COLUMN` on an empty or
+lightly-populated table really does take a second. In production, the picture
+changes.
 
-Suppose a new column is added to a table with hundreds of millions of rows that takes thousands of
-queries per second. While making this change, the SQL engine often **locks** the table (write lock
-/ table lock). During that lock, users on the live system can't write to the table, and in some
-cases can't read from it either. The system is temporarily paralyzed — there's **downtime.** In
-large systems, changing a SQL schema therefore demands serious planning, a maintenance window, and
-risk management. (Modern databases mitigate this with online DDL and tools like
-`pt-online-schema-change`, but the underlying problem is still there.)
+Imagine adding a column to a table with hundreds of millions of rows, serving
+thousands of queries per second. While applying the change, the SQL engine often
+**locks** the table (write lock / table lock). For the duration of that lock, users
+can't write to the table — and in some cases can't read from it either. The system
+temporarily stalls: **downtime.** That's why changing a SQL schema in large systems
+demands serious planning, a maintenance window, and risk management. (Online DDL in
+modern databases and tools like `pt-online-schema-change` soften this, but the
+underlying problem doesn't go away.)
 
-In NoSQL, since there's no schema, you don't tell the database "I'm adding a new column." In the
-backend code you add a new field to the newly saved document and the database accepts it directly.
-No locking, no downtime. Old documents keep living without that field.
+In NoSQL, since there is no schema, you never tell the database "I'm adding a
+column." You add a field to newly saved documents in the backend code, and the
+database accepts it as is. No lock, no downtime. Old documents carry on without the
+field.
 
-## 3. Relational bonds (foreign keys) can turn into shackles
+## 3. Relational bonds (foreign keys) can become shackles
 
-SQL's real power comes from being **relational.** Tables are bound to each other by foreign-key
-rules, and that guarantees the consistency of the data.
+SQL's real power comes from being **relational.** Tables are bound to each other by
+foreign-key rules, and those bonds guarantee the data's consistency.
 
-Suppose an `orders` table is bound to a `users` table. When a radical change is wanted in the
-order structure or the users table, those relational constraints mean everything has to be kept
-consistent in a chain — a domino effect arises. These bonds keep the data safe, but they also slow
-change down.
+Picture an `orders` table bound to a `users` table. When a deep change is wanted in
+the order structure or the users table, those constraints force every link in the
+chain to stay consistent — a domino effect. The bonds keep the data safe, but they
+also slow change down.
 
-On the document side of NoSQL, relationships are usually loose, or data is stored **embedded.** A
-customer's name and address can be embedded directly inside the order document. Since there's no
-relational bond, changing one side doesn't break the other — but this has a cost too: the same
-customer info is repeated across many documents, and preserving consistency now becomes the
-**application's** responsibility.
+On the document side of NoSQL, relationships are usually loose, or the data is
+stored **embedded.** A customer's name and address can be embedded directly inside
+the order document. With no relational bond, changing one side doesn't break the
+other — but that too has a price: the same customer info is repeated across many
+documents, and keeping it consistent becomes the **application's** responsibility.
 
 ## 4. The difficulty of horizontal scaling
 
-When data grows too large to fit on a single server, it has to be spread across multiple servers.
-This is where the paths of SQL and NoSQL diverge most sharply.
+When data outgrows a single server, it has to be spread across several. This is
+where the paths of SQL and NoSQL diverge most sharply.
 
-Because SQL tables are bound to each other by `JOIN`s, splitting the data across different servers
-(**sharding**) is hard. If table `A` is on one server and table `B` on another, merging them with
-a fast `JOIN` is costly — the query gets stuck in cross-server network traffic. So SQL usually
-scales **vertically:** it grows toward a more powerful, more expensive **single** server.
+Because SQL tables are tied together by `JOIN`s, splitting the data across servers
+(**sharding**) is hard. If table `A` lives on one server and table `B` on another,
+combining them with a fast `JOIN` is expensive — the query gets bogged down in
+cross-server network traffic. So SQL usually scales **vertically:** toward a more
+powerful, more expensive **single** server.
 
-In NoSQL, since each document is self-contained and there are no rigid relationships, the data can
-be spread comfortably across dozens of servers. As the system gets congested, you add one more
-server behind it; it grows **horizontally,** almost linearly.
+In NoSQL, each document is self-contained and there are no rigid relationships, so
+the data spreads comfortably across dozens of servers. When the system gets
+congested, one more server goes in behind it; growth is **horizontal** and nearly
+linear.
 
 | Criterion | SQL (Relational) | NoSQL (e.g. Document) |
 | --- | --- | --- |
@@ -109,31 +118,34 @@ server behind it; it grows **horizontally,** almost linearly.
 
 ## Rigidity is not a flaw but a choice
 
-Looking at this table and concluding "then NoSQL is superior in every way" would be wrong. All of
-SQL's rigidity is not for nothing — each part comes in exchange for a **guarantee.**
+Looking at that table and concluding "then NoSQL is superior in every way" would be
+a mistake. SQL's rigidity isn't there for nothing — every line of it buys a
+**guarantee.**
 
-SQL manages its strict rules and safety priority through the **ACID** principles (Atomicity,
-Consistency, Isolation, Durability). A rigid schema stops bad data at the door. Foreign keys
-prevent an order from being written for a user who doesn't exist. Strong consistency on a single
-server won't let two operations corrupt the same balance. So SQL's "lack of flexibility" is the
-price of data staying **always consistent and safe.**
+SQL enforces its strict rules and safety-first stance through the **ACID**
+principles (Atomicity, Consistency, Isolation, Durability). A rigid schema stops bad
+data at the door. Foreign keys prevent an order from being written for a user who
+doesn't exist. Strong consistency on a single server won't let two operations
+corrupt the same balance. SQL's "inflexibility" is the price of data that stays
+**consistent and safe at all times.**
 
-NoSQL's flexibility, meanwhile, often means loosening some of these guarantees. That's not a flaw;
-it's simply a **different choice.** The right question isn't "which is better" but "which does the
-job at hand want."
+NoSQL's flexibility, in turn, often means loosening some of those guarantees. That
+isn't a flaw; it's a **different choice.** The right question isn't "which is
+better" but "which one does the job at hand call for."
 
-And this is exactly where the real-world answer hides: most large systems don't **choose** between
-the two.
+And this is exactly where the real-world answer hides: most large systems don't
+**choose** between the two at all.
 
 ## The real answer: polyglot persistence
 
-Nearly all large, scalable production projects use an approach called **polyglot persistence:**
-instead of being stuck with a single database technology, they pick the **most suitable database
-for each job** and run them all together within the same project.
+Nearly every large, scalable production project uses an approach called **polyglot
+persistence:** instead of committing to a single database technology, pick the
+**best-suited database for each job** and run them all side by side in the same
+project.
 
-To make this concrete, let's look at the scenario of a large e-commerce platform. In such a system,
-each piece of data has a different character — a different level of safety and speed it needs. So
-architects split the data into different drawers:
+To make this concrete, consider a large e-commerce platform. In such a system, each
+piece of data has its own character — its own required level of safety and speed. So
+architects split the data into separate drawers:
 
 <pre style="width:max-content;max-width:100%;margin-inline:auto">
                   +-----------------------------------+
@@ -162,76 +174,79 @@ architects split the data into different drawers:
 
 ### Orders, payments, finance → SQL (PostgreSQL)
 
-In payment and order processes, **consistency is vital.** When a customer pays, the operations —
-debiting the account, issuing the invoice, decrementing stock — must either all succeed together,
-or, if there's an error, all be rolled back (ACID's *atomicity* principle). The order here is bound
-by foreign keys to the ID in the `users` table and the transaction ID in the `payments` table. In
-this drawer, even a one-cent inconsistency is unacceptable — which is why a rigid, relational,
-ACID-compliant SQL database is chosen.
+In payment and order flows, **consistency is vital.** When a customer pays, the
+debit from the account, the invoice, and the stock decrement must either all succeed
+together or, on any error, all be rolled back (ACID's *atomicity* principle). The
+order here is bound by foreign keys to the ID in the `users` table and the
+transaction ID in the `payments` table. In this drawer, even a one-cent
+inconsistency is unacceptable — which is why a rigid, relational, ACID-compliant SQL
+database is the choice.
 
 ### Product catalog → NoSQL / Document (MongoDB)
 
-In e-commerce there are millions of different products, and **each product's attributes (schema)
-are entirely different:**
+E-commerce means millions of different products, and **each product's attributes
+(its schema) are entirely different:**
 
 - A mobile phone: RAM, storage, camera resolution, screen size
 - A T-shirt: size, color, fabric type, collar type
 - An apple: just weight
 
-If this catalog were kept in SQL, you'd have to either open hundreds of columns per category or
-build complex `JOIN` tables — and most of those tables would be filled with `NULL`. In a document
-database like MongoDB, each product is stored flexibly with its own JSON schema. Adding a new
-product type to the system is done instantly, without taking the live system down and without
-waiting on an `ALTER TABLE`. The job here wants **flexibility,** not consistency.
+Kept in SQL, this catalog would demand either hundreds of columns per category or a
+tangle of `JOIN` tables — most of them filled with `NULL`. In a document database
+like MongoDB, each product is stored with its own JSON schema. Adding a new product
+type happens instantly, without taking the live system down or waiting on an
+`ALTER TABLE`. What this job calls for is **flexibility,** not consistency.
 
 ### Cart and session → NoSQL / In-Memory (Redis)
 
-The products in a user's cart and their session info must be read and written **very fast,** but
-don't need to be stored forever. Redis keeps data in **RAM** (in-memory) rather than on disk, so it
-handles hundreds of thousands of reads/writes per second at microsecond latency. When a product is
-added to the cart, the data is written straight to Redis. The moment the "complete order" button is
-pressed, the cart is read from Redis, validated, and transferred to PostgreSQL for **durable/safe**
-storage. This drawer's priority isn't consistency but raw **speed.**
+The items in a user's cart and their session data must be read and written **very
+fast,** but they don't need to live forever. Redis keeps data in **RAM**
+(in-memory) rather than on disk, so it handles hundreds of thousands of reads and
+writes per second at microsecond latency. When a product goes into the cart, the
+data is written straight to Redis. The moment "complete order" is pressed, the cart
+is read from Redis, validated, and handed to PostgreSQL for **durable, safe**
+storage. This drawer's priority isn't consistency — it's raw **speed.**
 
 ### Search and filtering → NoSQL / Search engine (Elasticsearch)
 
-When "blue running shoes" is typed into the search box, running a `LIKE '%blue%'` search over
-billions of rows brings SQL to its knees — the query takes seconds and locks the system. A search
-engine like Elasticsearch, on the other hand, **indexes** the words ahead of time; tolerating
-typos, it returns the most relevant results within milliseconds. What's decisive here is **search
-performance.**
+When someone types "blue running shoes" into the search box, running
+`LIKE '%blue%'` over billions of rows overwhelms SQL — the query takes seconds and
+locks up the system. A search engine like Elasticsearch **indexes** the words ahead
+of time; it tolerates typos and returns the most relevant results in milliseconds.
+What's decisive here is **search performance.**
 
 ## How do these databases talk to each other?
 
-In this system, each service is responsible for its own job and its own database (microservice
-architecture). So how does data that changes in one service reach another? The answer: not
-directly, but through a **message broker** (Kafka, for example).
+In this system, each service owns its own job and its own database (microservice
+architecture). So how does data that changes in one service reach another? The
+answer: not directly, but through a **message broker** (Kafka, for example).
 
 A typical purchase flow works like this:
 
 1. The **Cart Service (Redis)** keeps the cart ready.
-2. When the user hits "Buy," the **Order Service (PostgreSQL)** kicks in, validates the payment
-   with ACID guarantees, and writes the order durably.
-3. Once the order completes, a **"product X sold"** message is published to a Kafka topic in the
-   background.
-4. The **Product Service (MongoDB)**, listening to that message, updates the stock count of the
-   relevant product.
-5. The **Search Service (Elasticsearch)**, listening to the same message, refreshes the stock info
-   in the results.
+2. When the user hits "Buy," the **Order Service (PostgreSQL)** takes over,
+   validates the payment with ACID guarantees, and writes the order durably.
+3. Once the order completes, a **"product X sold"** message is published to a Kafka
+   topic in the background.
+4. The **Product Service (MongoDB)**, listening for that message, updates the
+   product's stock count.
+5. The **Search Service (Elasticsearch)**, listening for the same message,
+   refreshes the stock info in its results.
 
-This way each database, while doing the job it's strongest at, doesn't get cut off from the
-others; they work like a loosely-coupled orchestra over events.
+Each database thus does the work it's strongest at without losing touch with the
+others; together they play like a loosely coupled orchestra, conducted by events.
 
-## Summary: flexibility isn't a shortfall but an axis
+## Summary: flexibility isn't a shortfall — it's an axis
 
-Adding a column with `ALTER TABLE` is flexibility too, but at the micro level. The architectural
-flexibility meant by "SQL isn't flexible" lives on a different axis — and SQL deliberately
-constrains it for the sake of keeping data always consistent and safe. What we call its "lack of
-flexibility" is really that safety trade-off itself.
+Adding a column with `ALTER TABLE` is flexibility too, but at the micro level. The
+architectural flexibility meant by "SQL isn't flexible" lives on a different axis —
+and SQL constrains it deliberately, so that data stays consistent and safe at all
+times. What we call its "inflexibility" is that safety trade-off itself.
 
-So the right reading isn't "SQL weak, NoSQL strong." The two are **two ends of one axis:** rigid
-consistency and safety at one end, flexibility and scale at the other. And large real-world systems
-don't pick one of these ends; they place **each job at its own end.** Orders and payments live in
-PostgreSQL, the catalog in MongoDB, the cart in Redis, search in Elasticsearch — and they all talk
-over Kafka. In a modern architecture there's no single hero: **SQL provides safety, NoSQL carries
-flexibility and speed.**
+So the right reading isn't "SQL weak, NoSQL strong." The two are **opposite ends of
+one axis:** rigid consistency and safety on one end, flexibility and scale on the
+other. Large real-world systems don't pick an end; they place **each job at the end
+it belongs to.** Orders and payments live in PostgreSQL, the catalog in MongoDB, the
+cart in Redis, search in Elasticsearch — and they all talk over Kafka. In a modern
+architecture there is no single hero: **SQL provides the safety, NoSQL carries the
+flexibility and the speed.**
